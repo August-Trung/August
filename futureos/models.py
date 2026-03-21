@@ -8,6 +8,9 @@ from pydantic import BaseModel, Field
 
 class IntentType(str, Enum):
     FIND_DRAFT = "find_draft"
+    FILE_READ = "file_read"
+    FILE_WRITE = "file_write"
+    FILE_DELETE = "file_delete"
     SEND_ZALO = "send_zalo"
     SEND_BULK_EMAIL = "send_bulk_email"
     COMPOSITE = "composite"
@@ -32,3 +35,22 @@ class ExecutionResult(BaseModel):
     action: IntentType
     detail: str
     payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class Role(str, Enum):
+    OWNER = "owner"
+    DEV = "dev"
+    USER = "user"
+    GUEST = "guest"
+
+
+class UserContext(BaseModel):
+    role: Role = Role.USER
+    allow_c_drive_full: bool = False
+    actor: str = "local-user"
+
+
+class PolicyDecision(BaseModel):
+    allowed: bool
+    reason: str
+    needs_confirmation: bool = False

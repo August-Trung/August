@@ -8,6 +8,7 @@ from typing import Iterable
 from futureos.models import Action
 
 HISTORY_FILE = Path("data/history.jsonl")
+AUDIT_FILE = Path("data/audit.jsonl")
 
 
 def should_require_confirmation(actions: Iterable[Action]) -> bool:
@@ -24,4 +25,11 @@ def write_history(entry: dict) -> None:
     HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
     payload = {"ts": datetime.utcnow().isoformat(), **entry}
     with HISTORY_FILE.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+
+
+def write_audit(entry: dict) -> None:
+    AUDIT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    payload = {"ts": datetime.utcnow().isoformat(), **entry}
+    with AUDIT_FILE.open("a", encoding="utf-8") as f:
         f.write(json.dumps(payload, ensure_ascii=False) + "\n")

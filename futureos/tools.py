@@ -71,3 +71,34 @@ def send_bulk_email(subject: str, body: str, recipients: list[str]) -> dict[str,
         server.login(settings.smtp_user, settings.smtp_pass)
         server.sendmail(settings.smtp_from, recipients, msg.as_string())
     return {"mode": "sent", "count": len(recipients)}
+
+
+def read_text_file(path: str, max_chars: int = 2000) -> dict[str, Any]:
+    p = Path(path)
+    if not p.exists() or not p.is_file():
+        raise FileNotFoundError(f"File not found: {path}")
+    content = p.read_text(encoding="utf-8", errors="ignore")
+    return {"path": str(p), "content_preview": content[:max_chars], "length": len(content)}
+
+
+def write_text_file(path: str, content: str, append: bool = False) -> dict[str, Any]:
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    if settings.dry_run:
+        return {"mode": "dry_run", "path": str(p), "append": append, "content_preview": content[:120]}
+    if append:
+        with p.open("a", encoding="utf-8") as f:
+            f.write(content)
+    else:
+        p.write_text(content, encoding="utf-8")
+    return {"mode": "written", "path": str(p), "append": append}
+
+
+def delete_file(path: str) -> dict[str, Any]:
+    p = Path(path)
+    if not p.exists():
+        return {"mode": "not_found", "path": str(p)}
+    if settings.dry_run:
+        return {"mode": "dry_run", "path": str(p)}
+    p.unlink(missing_ok=True)
+    return {"mode": "deleted", "path": str(p)}
