@@ -128,6 +128,13 @@ def _run_cases() -> dict[str, CaseResult]:
     cancel_ok = q.cancel(t.id)
     results["F-009"] = CaseResult("Pass" if cancel_ok else "Fail", f"cancel_ok={cancel_ok}", "Queued task cancel supported.")
 
+    # Core file ops VN command
+    p = route("tao thu muc zzz o desktop roi di chuyen vao thu muc backup trong o d")
+    composite_steps = p.actions[0].args.get("steps", []) if p.actions else []
+    intents = [x.get("intent") for x in composite_steps]
+    core_ok = "dir_create" in intents and "path_move" in intents
+    results["F-010"] = CaseResult("Pass" if core_ok else "Fail", ",".join(intents), "VN create+move command parsing.")
+
     # Permission
     guest = UserContext(role=Role.GUEST, allow_c_drive_full=False, actor="tc-guest")
     dec = evaluate_action(Action(intent=IntentType.FILE_DELETE, args={"path": "C:\\tmp\\a.txt"}), guest)

@@ -20,12 +20,13 @@
 | Dashboard + settings | done | Session/log/settings + gate panel |
 | Background runtime | done | Queue + worker + lock/heartbeat + retry/backoff + dead-letter |
 | Test matrix and regression suite | done | `Not Run` cleanup + automation + evidence image |
+| Core file ops parser (VN create+move) | done | Supports mkdir/move/copy/rename/list intents |
 
 ## This Execution Plan
-- Hardening Sprint 1:
-- Worker safety (single instance lock + heartbeat + crash backoff).
-- Queue reliability (idempotency, timeout, cancel, retry/dead-letter).
-- Audit integrity chain + standardized run gate script.
+- Core file ops hotfix:
+- Add missing basic user intents (mkdir/move/copy/rename/list).
+- Parse Vietnamese multi-step command create+move with Desktop and D drive target.
+- Add policy/workflow/test coverage for new intents.
 
 ## Next Execution Plan
 - Hardening Sprint 2: service wrapper + auto-start + health endpoint.

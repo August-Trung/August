@@ -2,9 +2,14 @@ from __future__ import annotations
 
 from futureos.models import Action, ExecutionResult, IntentType
 from futureos.tools import (
+    copy_path,
+    create_directory,
     delete_file,
     find_draft_files,
+    list_path,
+    move_path,
     read_text_file,
+    rename_path,
     send_bulk_email,
     send_zalo,
     write_text_file,
@@ -36,6 +41,26 @@ def execute_action(action: Action) -> ExecutionResult:
     if action.intent == IntentType.FILE_DELETE:
         resp = delete_file(path=action.args.get("path", ""))
         return ExecutionResult(ok=True, action=action.intent, detail="File delete completed", payload=resp)
+
+    if action.intent == IntentType.DIR_CREATE:
+        resp = create_directory(path=action.args.get("path", ""))
+        return ExecutionResult(ok=True, action=action.intent, detail="Directory create completed", payload=resp)
+
+    if action.intent == IntentType.PATH_MOVE:
+        resp = move_path(src_path=action.args.get("src_path", ""), dst_path=action.args.get("dst_path", ""))
+        return ExecutionResult(ok=True, action=action.intent, detail="Path move completed", payload=resp)
+
+    if action.intent == IntentType.PATH_COPY:
+        resp = copy_path(src_path=action.args.get("src_path", ""), dst_path=action.args.get("dst_path", ""))
+        return ExecutionResult(ok=True, action=action.intent, detail="Path copy completed", payload=resp)
+
+    if action.intent == IntentType.PATH_RENAME:
+        resp = rename_path(src_path=action.args.get("src_path", ""), new_name=action.args.get("new_name", ""))
+        return ExecutionResult(ok=True, action=action.intent, detail="Path rename completed", payload=resp)
+
+    if action.intent == IntentType.PATH_LIST:
+        resp = list_path(path=action.args.get("path", ""), limit=int(action.args.get("limit", 50)))
+        return ExecutionResult(ok=True, action=action.intent, detail="Path list completed", payload=resp)
 
     if action.intent == IntentType.SEND_ZALO:
         resp = send_zalo(

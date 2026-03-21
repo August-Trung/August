@@ -6,16 +6,16 @@
 
 ## Current Snapshot
 - Date: 2026-03-22
-- Active branch: `codex/hardening-sprint-1`
-- Last focus: hardening reliability/security controls
-- Run status: hardening sprint 1 implemented
+- Active branch: `codex/core-file-ops`
+- Last focus: core file operations gap closure
+- Run status: VN create+move command supported
 
 ## Completed In Latest Session
-- Added queue hardening: idempotency, timeout requeue, cancel task.
-- Added worker hardening: lock, heartbeat, crash backoff.
-- Added tamper-evident hash chain for history/audit.
-- Added run gate script: `scripts/run_gate.py`.
-- Added tests for queue/safety hardening and updated testcase evidence.
+- Added core file intents: dir_create/path_move/path_copy/path_rename/path_list.
+- Added workflow implementations for folder/path operations.
+- Added VN multi-step parser for create+move desktop -> D:\\backup.
+- Extended policy checks for new path intents.
+- Added testcase and tests for core file operations.
 
 ## In Progress
 - Hardening Sprint 2 planning
@@ -24,6 +24,7 @@
 - Real Zalo integration depends on OA/ZNS policy and credentials
 - Voice ownership detection still passphrase-based (needs real embedding verifier)
 - Queue is still file-based, not built for high-concurrency distributed execution.
+- Path parser still heuristic-based for complex natural language variants.
 
 ## Verify Quickly
 ```powershell
@@ -49,7 +50,7 @@ python run.py "tim ban thao lap trinh trong o D va gui zalo cho sep va gui email
 ## Next 3 Priorities
 1. Service wrapper for always-on background worker with auto-start.
 2. Secure secret storage and admin settings hardening in UI.
-3. Real microphone streaming STT + speaker embedding verifier integration.
+3. Richer path/entity extraction for Vietnamese commands.
 
 ## Instructions For New Chat
 - Ask assistant to read:
