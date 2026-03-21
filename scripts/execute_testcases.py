@@ -5,7 +5,6 @@ import sys
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Callable
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -18,11 +17,19 @@ from futureos.auth import AUTH_STATE_FILE, authenticate_login
 from futureos.models import Action, IntentType, Role, UserContext
 from futureos.policy import evaluate_action, evaluate_plan
 from futureos.router import route
-from futureos.safety import AUDIT_FILE
+from futureos.safety import AUDIT_CHAIN_FILE, AUDIT_FILE, HISTORY_CHAIN_FILE, HISTORY_FILE, verify_chain
 from futureos.session import ACTIVE_SESSION_FILE, SESSIONS_FILE, SessionStore
 from futureos.voice import VoiceEngine
 from futureos.workflows import execute_action
-from futureos.queue import DEAD_LETTER_FILE, QUEUE_FILE, BackgroundWorker, TaskQueue
+from futureos.queue import (
+    DEAD_LETTER_FILE,
+    PROCESSED_KEYS_FILE,
+    QUEUE_FILE,
+    WORKER_HEARTBEAT_FILE,
+    WORKER_LOCK_FILE,
+    BackgroundWorker,
+    TaskQueue,
+)
 
 
 @dataclass
@@ -33,7 +40,20 @@ class CaseResult:
 
 
 def _reset_runtime_files() -> None:
-    for p in [AUTH_STATE_FILE, SESSIONS_FILE, ACTIVE_SESSION_FILE, AUDIT_FILE, QUEUE_FILE, DEAD_LETTER_FILE]:
+    for p in [
+        AUTH_STATE_FILE,
+        SESSIONS_FILE,
+        ACTIVE_SESSION_FILE,
+        AUDIT_FILE,
+        HISTORY_FILE,
+        AUDIT_CHAIN_FILE,
+        HISTORY_CHAIN_FILE,
+        QUEUE_FILE,
+        DEAD_LETTER_FILE,
+        PROCESSED_KEYS_FILE,
+        WORKER_LOCK_FILE,
+        WORKER_HEARTBEAT_FILE,
+    ]:
         if p.exists():
             p.unlink(missing_ok=True)
 
@@ -91,6 +111,23 @@ def _run_cases() -> dict[str, CaseResult]:
     dead_ok = (not dead_out.get("ok", True)) and DEAD_LETTER_FILE.exists()
     results["F-007"] = CaseResult("Pass" if dead_ok else "Fail", json.dumps(dead_out, ensure_ascii=False), "Dead-letter on unrecoverable task.")
 
+    _reset_runtime_files()
+    q_store = SessionStore()
+    q_rec = q_store.create_session(UserContext(role=Role.OWNER, allow_c_drive_full=False, actor="tc-idem"))
+    q = TaskQueue()
+    a = q.enqueue("tim file o d", q_rec.session_id, idempotency_key="same-key")
+    b = q.enqueue("tim file o d", q_rec.session_id, idempotency_key="same-key")
+    idem_ok = a.id == b.id and q.stats().get("queued", 0) == 1
+    results["F-008"] = CaseResult("Pass" if idem_ok else "Fail", f"a={a.id},b={b.id},queued={q.stats().get('queued',0)}", "Idempotency blocks duplicate queue.")
+
+    _reset_runtime_files()
+    q_store = SessionStore()
+    q_rec = q_store.create_session(UserContext(role=Role.OWNER, allow_c_drive_full=False, actor="tc-cancel"))
+    q = TaskQueue()
+    t = q.enqueue("tim file o d", q_rec.session_id)
+    cancel_ok = q.cancel(t.id)
+    results["F-009"] = CaseResult("Pass" if cancel_ok else "Fail", f"cancel_ok={cancel_ok}", "Queued task cancel supported.")
+
     # Permission
     guest = UserContext(role=Role.GUEST, allow_c_drive_full=False, actor="tc-guest")
     dec = evaluate_action(Action(intent=IntentType.FILE_DELETE, args={"path": "C:\\tmp\\a.txt"}), guest)
@@ -120,7 +157,12 @@ def _run_cases() -> dict[str, CaseResult]:
     from futureos.safety import write_audit
 
     write_audit({"event": "tc"})
-    results["S-002"] = CaseResult("Pass" if AUDIT_FILE.exists() else "Fail", f"audit_exists={AUDIT_FILE.exists()}", "Audit log exists.")
+    chain_ok = verify_chain(AUDIT_FILE, AUDIT_CHAIN_FILE)
+    results["S-002"] = CaseResult(
+        "Pass" if AUDIT_FILE.exists() and chain_ok else "Fail",
+        f"audit_exists={AUDIT_FILE.exists()},chain_ok={chain_ok}",
+        "Audit log exists and integrity chain verifies.",
+    )
 
     # S-003 auth lockout
     _reset_runtime_files()

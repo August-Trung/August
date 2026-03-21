@@ -5,25 +5,25 @@
 - Deadline: 2026-04-30
 
 ## Current Snapshot
-- Date: 2026-03-21
-- Active branch: `codex/flow-05-background-worker`
-- Last focus: background queue and worker runtime
-- Run status: queue/worker commands available
+- Date: 2026-03-22
+- Active branch: `codex/hardening-sprint-1`
+- Last focus: hardening reliability/security controls
+- Run status: hardening sprint 1 implemented
 
 ## Completed In Latest Session
-- Added durable queue: `futureos/queue.py`
-- Added retry/backoff + dead-letter behavior
-- Added CLI commands: `enqueue`, `queue-status`, `worker`
-- Added UI queue actions (enqueue and process-one)
-- Added Flow 05 test coverage and updated evidence image
+- Added queue hardening: idempotency, timeout requeue, cancel task.
+- Added worker hardening: lock, heartbeat, crash backoff.
+- Added tamper-evident hash chain for history/audit.
+- Added run gate script: `scripts/run_gate.py`.
+- Added tests for queue/safety hardening and updated testcase evidence.
 
 ## In Progress
-- Hardening sprint planning
+- Hardening Sprint 2 planning
 
 ## Open Risks / Blockers
 - Real Zalo integration depends on OA/ZNS policy and credentials
 - Voice ownership detection still passphrase-based (needs real embedding verifier)
-- Queue file storage needs lock strategy for high-concurrency scenarios
+- Queue is still file-based, not built for high-concurrency distributed execution.
 
 ## Verify Quickly
 ```powershell
@@ -47,9 +47,9 @@ python run.py "tim ban thao lap trinh trong o D va gui zalo cho sep va gui email
 - `futureos/voice.py`
 
 ## Next 3 Priorities
-1. Add service wrapper for always-on background worker.
-2. Optimize file-search latency and reduce long-running tests.
-3. Integrate real mic streaming STT + speaker embedding verifier.
+1. Service wrapper for always-on background worker with auto-start.
+2. Secure secret storage and admin settings hardening in UI.
+3. Real microphone streaming STT + speaker embedding verifier integration.
 
 ## Instructions For New Chat
 - Ask assistant to read:
