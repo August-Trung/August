@@ -9,7 +9,7 @@ from futureos.auth import authenticate_login
 from futureos.config import settings
 from futureos.engine import execute_command, resolve_session
 from futureos.queue import BackgroundWorker, TaskQueue
-from futureos.safety import ask_confirmation
+from futureos.safety import AUDIT_CHAIN_FILE, AUDIT_FILE, HISTORY_CHAIN_FILE, HISTORY_FILE, ask_confirmation, verify_chain
 from futureos.session import SessionStore
 from futureos.voice import VoiceEngine
 
@@ -145,18 +145,42 @@ def enqueue_cmd(
     session_id: Optional[str] = typer.Option(None, help="Session id (default: active session)"),
     auto_confirm: bool = typer.Option(False, help="Auto confirm high-risk actions in background"),
     max_retries: int = typer.Option(settings.queue_max_retries, help="Max retries for this task"),
+    timeout_seconds: int = typer.Option(settings.queue_task_timeout_seconds, help="Task processing timeout"),
+    idempotency_key: str = typer.Option("", help="Optional idempotency key"),
 ) -> None:
     sid, user_ctx = resolve_session(session_store, session_id)
     if not sid or not user_ctx:
         print("No active session. Please run login first.")
         return
-    task = task_queue.enqueue(command=command, session_id=sid, auto_confirm=auto_confirm, max_retries=max_retries)
+    task = task_queue.enqueue(
+        command=command,
+        session_id=sid,
+        auto_confirm=auto_confirm,
+        max_retries=max_retries,
+        timeout_seconds=timeout_seconds,
+        idempotency_key=idempotency_key or None,
+    )
     print(json.dumps(task.to_dict(), ensure_ascii=False, indent=2))
 
 
 @app.command("queue-status")
 def queue_status() -> None:
     print(json.dumps({"stats": task_queue.stats(), "tasks": [t.to_dict() for t in task_queue.list_all()]}, ensure_ascii=False, indent=2))
+
+
+@app.command("cancel-task")
+def cancel_task(task_id: str = typer.Argument(..., help="Task id to cancel")) -> None:
+    if task_queue.cancel(task_id):
+        print(f"Cancelled task: {task_id}")
+    else:
+        print("Task not found or not cancellable.")
+
+
+@app.command("verify-logs")
+def verify_logs() -> None:
+    history_ok = verify_chain(HISTORY_FILE, HISTORY_CHAIN_FILE)
+    audit_ok = verify_chain(AUDIT_FILE, AUDIT_CHAIN_FILE)
+    print(json.dumps({"history_chain_ok": history_ok, "audit_chain_ok": audit_ok}, ensure_ascii=False, indent=2))
 
 
 @app.command("worker")
@@ -169,7 +193,10 @@ def worker_cmd(
         return
     limit = stop_after if stop_after > 0 else None
     print("Worker loop started. Press Ctrl+C to stop.")
-    worker.run_loop(stop_after=limit)
+    try:
+        worker.run_loop(stop_after=limit)
+    except RuntimeError as e:
+        print(str(e))
 
 
 @app.command()

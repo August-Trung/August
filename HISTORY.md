@@ -158,3 +158,33 @@
 
 ### Next Step
 - Hardening and productionization: service wrapper, locking strategy, and faster file search.
+
+## 2026-03-22 (Hardening Sprint 1)
+
+### Delivered
+- Added queue reliability controls:
+  - idempotency keys
+  - task timeout/requeue
+  - task cancel API
+- Added worker runtime safety:
+  - single-instance lock (`data/worker.lock`)
+  - heartbeat (`data/worker_heartbeat.json`)
+  - crash backoff loop
+- Added tamper-evident log chain for history/audit (`_hash`, `_prev_hash`).
+- Added CLI command: `verify-logs`.
+- Added gate script: `scripts/run_gate.py`.
+- Extended tests:
+  - queue hardening tests
+  - safety chain tests
+- Extended testcase automation with Hardening S1 cases (F-008, F-009).
+
+### Decisions
+- Keep queue store file-based for Sprint 1, with clear limitations documented.
+- Treat `Not Run` as blocking in all gates.
+
+### Risks
+- File-based queue/lock remains limited for multi-process high-throughput scenarios.
+- Speaker verification still passphrase-similarity based.
+
+### Next Step
+- Hardening Sprint 2: service wrapper, stronger locking, and microphone streaming voice path.

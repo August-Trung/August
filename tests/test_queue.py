@@ -4,13 +4,13 @@ import unittest
 from pathlib import Path
 
 from futureos.models import Role, UserContext
-from futureos.queue import DEAD_LETTER_FILE, QUEUE_FILE, BackgroundWorker, TaskQueue
+from futureos.queue import DEAD_LETTER_FILE, QUEUE_FILE, WORKER_LOCK_FILE, BackgroundWorker, TaskQueue, WorkerLock
 from futureos.session import ACTIVE_SESSION_FILE, SESSIONS_FILE, SessionStore
 
 
 class QueueTests(unittest.TestCase):
     def setUp(self) -> None:
-        for p in [QUEUE_FILE, DEAD_LETTER_FILE, SESSIONS_FILE, ACTIVE_SESSION_FILE]:
+        for p in [QUEUE_FILE, DEAD_LETTER_FILE, SESSIONS_FILE, ACTIVE_SESSION_FILE, WORKER_LOCK_FILE]:
             Path(p).unlink(missing_ok=True)
 
     def test_enqueue_and_process_success(self) -> None:
@@ -33,6 +33,30 @@ class QueueTests(unittest.TestCase):
         out = worker.run_once()
         self.assertFalse(out["ok"])
         self.assertTrue(Path(DEAD_LETTER_FILE).exists())
+
+    def test_idempotency_prevents_duplicate_queued_task(self) -> None:
+        store = SessionStore()
+        rec = store.create_session(UserContext(role=Role.OWNER, allow_c_drive_full=False, actor="idem-owner"))
+        queue = TaskQueue()
+        a = queue.enqueue("tim file o d", rec.session_id, idempotency_key="same-key")
+        b = queue.enqueue("tim file o d", rec.session_id, idempotency_key="same-key")
+        self.assertEqual(a.id, b.id)
+        self.assertEqual(queue.stats()["queued"], 1)
+
+    def test_cancel_task(self) -> None:
+        store = SessionStore()
+        rec = store.create_session(UserContext(role=Role.OWNER, allow_c_drive_full=False, actor="cancel-owner"))
+        queue = TaskQueue()
+        task = queue.enqueue("tim file o d", rec.session_id)
+        self.assertTrue(queue.cancel(task.id))
+        self.assertEqual(queue.stats()["cancelled"], 1)
+
+    def test_worker_lock_single_holder(self) -> None:
+        l1 = WorkerLock()
+        l2 = WorkerLock()
+        self.assertTrue(l1.acquire())
+        self.assertFalse(l2.acquire())
+        l1.release()
 
 
 if __name__ == "__main__":

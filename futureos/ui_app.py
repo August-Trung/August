@@ -11,6 +11,7 @@ from futureos.auth import authenticate_login
 from futureos.config import settings
 from futureos.engine import execute_command, resolve_session
 from futureos.queue import BackgroundWorker, TaskQueue
+from futureos.safety import AUDIT_CHAIN_FILE, AUDIT_FILE, HISTORY_CHAIN_FILE, HISTORY_FILE, verify_chain
 from futureos.session import SessionStore
 from futureos.voice import VoiceEngine
 
@@ -90,6 +91,8 @@ with tabs[0]:
         st.code(json.dumps({"session_id": sid, "user": user_ctx.model_dump()}, ensure_ascii=False, indent=2))
         cmd = st.text_area("Command", value="tim ban thao lap trinh trong o D")
         auto_confirm = st.checkbox("Auto confirm high-risk actions", value=False)
+        timeout_seconds = st.number_input("Task timeout (sec)", min_value=10, max_value=600, value=settings.queue_task_timeout_seconds)
+        idem_key = st.text_input("Idempotency key (optional)", value="")
         col_run, col_queue = st.columns(2)
         if col_run.button("Run Command"):
             result = execute_command(
@@ -101,7 +104,13 @@ with tabs[0]:
             )
             st.json(result)
         if col_queue.button("Enqueue Command"):
-            task = task_queue.enqueue(command=cmd, session_id=sid, auto_confirm=auto_confirm)
+            task = task_queue.enqueue(
+                command=cmd,
+                session_id=sid,
+                auto_confirm=auto_confirm,
+                timeout_seconds=int(timeout_seconds),
+                idempotency_key=idem_key or None,
+            )
             st.success(f"Queued task: {task.id}")
             st.json(task.to_dict())
 
@@ -138,6 +147,12 @@ with tabs[2]:
     st.json({"stats": qstats, "tasks": [t.to_dict() for t in task_queue.list_all()]})
     if st.button("Process One Queued Task"):
         st.json(worker.run_once())
+    cancel_id = st.text_input("Cancel task id", value="")
+    if st.button("Cancel Task"):
+        if task_queue.cancel(cancel_id):
+            st.success("Task cancelled.")
+        else:
+            st.warning("Task not found or not cancellable.")
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("**Recent History**")
@@ -175,6 +190,13 @@ with tabs[4]:
     if st.button("Execute TEST_CASES and refresh evidence"):
         proc = subprocess.run([sys.executable, "scripts/execute_testcases.py"], capture_output=True, text=True, cwd=str(Path.cwd()))
         st.code(proc.stdout + "\n" + proc.stderr)
+    if st.button("Verify Log Integrity"):
+        st.json(
+            {
+                "history_chain_ok": verify_chain(HISTORY_FILE, HISTORY_CHAIN_FILE),
+                "audit_chain_ok": verify_chain(AUDIT_FILE, AUDIT_CHAIN_FILE),
+            }
+        )
     evidence = Path("data/test_evidence_latest.png")
     if evidence.exists():
         st.image(str(evidence), caption="Latest testcase evidence")

@@ -51,8 +51,10 @@ Background worker mode:
 ```powershell
 python run.py enqueue "tim file o d" --auto-confirm
 python run.py queue-status
+python run.py cancel-task <task_id>
 python run.py worker --once
 python run.py worker --stop-after 10
+python run.py verify-logs
 ```
 
 ## 2) Environment
@@ -87,6 +89,10 @@ VOICE_PROFILE_THRESHOLD=0.78
 QUEUE_MAX_RETRIES=3
 QUEUE_BACKOFF_SECONDS=10
 WORKER_POLL_SECONDS=5
+WORKER_CRASH_BACKOFF_SECONDS=5
+WORKER_LOCK_TTL_SECONDS=60
+QUEUE_TASK_TIMEOUT_SECONDS=90
+QUEUE_IDEMPOTENCY_WINDOW_MINUTES=120
 
 # Email (optional when DRY_RUN=false)
 SMTP_HOST=
@@ -114,6 +120,9 @@ ZALO_ACCESS_TOKEN=
 - UI shell with tabs: `Chat`, `Voice`, `Dashboard`, `Settings`, `Test Gate`
 - Durable task queue + background worker (`enqueue`, `queue-status`, `worker`)
 - Retry/backoff and dead-letter fallback for failed queued tasks
+- Idempotency key support, task timeout, and task cancel command
+- Worker single-instance lock + heartbeat
+- Tamper-evident hash chain for history/audit logs (`verify-logs`)
 - Search likely draft files under `D:\`
 - File CRUD actions (`read/write/delete`) with policy gate
 - Build outbound message payloads for Zalo + bulk email
@@ -141,6 +150,7 @@ ZALO_ACCESS_TOKEN=
 python scripts\check_testcases.py
 python -m unittest discover -s tests
 python scripts\execute_testcases.py
+python scripts\run_gate.py
 ```
 
 If any command fails, fix failures first before adding new feature work.

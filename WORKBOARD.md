@@ -18,23 +18,24 @@
 | Sensitive action rate limit | done | Window-based limit per session |
 | UI chat/voice | done | Streamlit shell with session-bound execution |
 | Dashboard + settings | done | Session/log/settings + gate panel |
-| Background runtime | done | Queue + worker with retry/backoff + dead-letter |
+| Background runtime | done | Queue + worker + lock/heartbeat + retry/backoff + dead-letter |
 | Test matrix and regression suite | done | `Not Run` cleanup + automation + evidence image |
 
 ## This Execution Plan
-- Build Flow 05 background runtime with durable task queue.
-- Add CLI/UI integration for queue and worker operations.
-- Extend testcase automation for queue/dead-letter coverage.
+- Hardening Sprint 1:
+- Worker safety (single instance lock + heartbeat + crash backoff).
+- Queue reliability (idempotency, timeout, cancel, retry/dead-letter).
+- Audit integrity chain + standardized run gate script.
 
 ## Next Execution Plan
-- Hardening sprint: optimize file-search latency and unit-test runtime.
+- Hardening Sprint 2: service wrapper + auto-start + health endpoint.
 - Add UI authentication persistence and secure secret handling.
 - Integrate microphone streaming STT and real speaker-embedding verifier.
 
 ## Known Issues
 - File finder still broad; relevance ranking should be improved.
 - No real speaker embedding verification yet.
-- No UI yet (CLI only).
+- Queue is file-based; high-concurrency locking strategy still basic.
 
 ## Upgrade Queue
 - Voice diarization + speaker verification confidence thresholds.
