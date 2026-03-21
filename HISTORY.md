@@ -103,3 +103,29 @@
 
 ### Next Step
 - Flow 04: build UI shell and dashboard/settings with session-aware controls.
+
+## 2026-03-21 (Flow 04 update)
+
+### Delivered
+- Created branch `codex/flow-04-ui-shell`.
+- Added shared execution module `futureos/engine.py` for CLI/UI parity.
+- Built Streamlit UI shell `futureos/ui_app.py` with tabs:
+  - Chat
+  - Voice profile
+  - Dashboard
+  - Settings
+  - Test Gate
+- Added functional Flow 04 test rows (F-004, F-005) and executed all testcases.
+- Updated testcase evidence image to `data/test_evidence_latest.png`.
+
+### Decisions
+- UI execution uses the same policy/session engine as CLI.
+- Test gate in UI runs `check_testcases` + `unittest` directly.
+- `Not Run` is treated as blocking status.
+
+### Risks
+- Streamlit UI currently simulates voice input by typed passphrase.
+- UI secret entry is plain form input; production needs hardened secret vault pattern.
+
+### Next Step
+- Flow 05: background runtime and queue worker for durable task automation.

@@ -6,19 +6,18 @@
 
 ## Current Snapshot
 - Date: 2026-03-21
-- Active branch: `codex/flow-03-voice-upgrade`
-- Last focus: Vietnamese voice upgrade + testcase execution cleanup
-- Run status: voice-enroll/voice-login enabled
+- Active branch: `codex/flow-04-ui-shell`
+- Last focus: UI shell + shared engine refactor
+- Run status: Streamlit UI available
 
 ## Completed In Latest Session
-- Cleared all `Not Run` testcase rows by execution automation
-- Added evidence image output for testcase run
-- Added voice profile store + wakeword normalization
-- Added `voice-enroll` and `voice-login` commands
-- Added voice unit tests
+- Added `futureos/ui_app.py` with Chat/Voice/Dashboard/Settings/Test Gate
+- Added shared command executor `futureos/engine.py`
+- Added Flow 04 test cases and re-executed full testcase matrix
+- Updated latest evidence image at `data/test_evidence_latest.png`
 
 ## In Progress
-- Flow 04 planning (UI shell + dashboard + settings)
+- Flow 05 planning (background runtime/queue)
 
 ## Open Risks / Blockers
 - Real Zalo integration depends on OA/ZNS policy and credentials
@@ -47,9 +46,9 @@ python run.py "tim ban thao lap trinh trong o D va gui zalo cho sep va gui email
 - `futureos/voice.py`
 
 ## Next 3 Priorities
-1. Flow 04: implement UI shell (chat + dashboard + settings).
-2. Add runtime panel to display session role and policy decisions.
-3. Prepare real speaker-embedding verifier adapter integration point.
+1. Flow 05: build background worker mode with task queue and retries.
+2. Bind UI actions to durable queue for outbound sends.
+3. Add real microphone streaming STT path into UI voice tab.
 
 ## Instructions For New Chat
 - Ask assistant to read:
