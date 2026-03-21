@@ -6,23 +6,24 @@
 
 ## Current Snapshot
 - Date: 2026-03-21
-- Active branch: `codex/flow-04-ui-shell`
-- Last focus: UI shell + shared engine refactor
-- Run status: Streamlit UI available
+- Active branch: `codex/flow-05-background-worker`
+- Last focus: background queue and worker runtime
+- Run status: queue/worker commands available
 
 ## Completed In Latest Session
-- Added `futureos/ui_app.py` with Chat/Voice/Dashboard/Settings/Test Gate
-- Added shared command executor `futureos/engine.py`
-- Added Flow 04 test cases and re-executed full testcase matrix
-- Updated latest evidence image at `data/test_evidence_latest.png`
+- Added durable queue: `futureos/queue.py`
+- Added retry/backoff + dead-letter behavior
+- Added CLI commands: `enqueue`, `queue-status`, `worker`
+- Added UI queue actions (enqueue and process-one)
+- Added Flow 05 test coverage and updated evidence image
 
 ## In Progress
-- Flow 05 planning (background runtime/queue)
+- Hardening sprint planning
 
 ## Open Risks / Blockers
 - Real Zalo integration depends on OA/ZNS policy and credentials
 - Voice ownership detection still passphrase-based (needs real embedding verifier)
-- Path extraction and CRUD safety prompts need hardening
+- Queue file storage needs lock strategy for high-concurrency scenarios
 
 ## Verify Quickly
 ```powershell
@@ -46,9 +47,9 @@ python run.py "tim ban thao lap trinh trong o D va gui zalo cho sep va gui email
 - `futureos/voice.py`
 
 ## Next 3 Priorities
-1. Flow 05: build background worker mode with task queue and retries.
-2. Bind UI actions to durable queue for outbound sends.
-3. Add real microphone streaming STT path into UI voice tab.
+1. Add service wrapper for always-on background worker.
+2. Optimize file-search latency and reduce long-running tests.
+3. Integrate real mic streaming STT + speaker embedding verifier.
 
 ## Instructions For New Chat
 - Ask assistant to read:

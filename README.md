@@ -46,6 +46,15 @@ UI mode:
 streamlit run futureos/ui_app.py
 ```
 
+Background worker mode:
+
+```powershell
+python run.py enqueue "tim file o d" --auto-confirm
+python run.py queue-status
+python run.py worker --once
+python run.py worker --stop-after 10
+```
+
 ## 2) Environment
 
 Edit `.env`:
@@ -75,6 +84,9 @@ USE_OPENAI_STT=false
 USE_OPENAI_TTS=false
 OPENAI_TTS_VOICE=alloy
 VOICE_PROFILE_THRESHOLD=0.78
+QUEUE_MAX_RETRIES=3
+QUEUE_BACKOFF_SECONDS=10
+WORKER_POLL_SECONDS=5
 
 # Email (optional when DRY_RUN=false)
 SMTP_HOST=
@@ -100,6 +112,8 @@ ZALO_ACCESS_TOKEN=
 - Add auth lockout and sensitive-action rate limiting
 - Vietnamese wakeword normalization and voice profile matching
 - UI shell with tabs: `Chat`, `Voice`, `Dashboard`, `Settings`, `Test Gate`
+- Durable task queue + background worker (`enqueue`, `queue-status`, `worker`)
+- Retry/backoff and dead-letter fallback for failed queued tasks
 - Search likely draft files under `D:\`
 - File CRUD actions (`read/write/delete`) with policy gate
 - Build outbound message payloads for Zalo + bulk email
@@ -112,6 +126,7 @@ ZALO_ACCESS_TOKEN=
 - Speaker verification uses passphrase similarity + fallback PIN/secret in this MVP
 - Zalo API behavior depends on OA/ZNS policy and your account permissions
 - UI currently uses typed simulation for voice capture (no direct mic capture yet)
+- Queue storage is local-file based; single-machine operation is assumed
 
 ## 5) Suggested next steps
 

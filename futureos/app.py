@@ -8,12 +8,15 @@ import typer
 from futureos.auth import authenticate_login
 from futureos.config import settings
 from futureos.engine import execute_command, resolve_session
+from futureos.queue import BackgroundWorker, TaskQueue
 from futureos.safety import ask_confirmation
 from futureos.session import SessionStore
 from futureos.voice import VoiceEngine
 
 app = typer.Typer(add_completion=False)
 session_store = SessionStore()
+task_queue = TaskQueue()
+worker = BackgroundWorker(task_queue, session_store)
 
 
 def _run_command(raw_text: str, session_id: str, user_ctx, voice: VoiceEngine | None = None) -> None:
@@ -134,6 +137,39 @@ def sessions_cmd() -> None:
         for s in records
     ]
     print(json.dumps(output, ensure_ascii=False, indent=2))
+
+
+@app.command("enqueue")
+def enqueue_cmd(
+    command: str = typer.Argument(..., help="Natural language command"),
+    session_id: Optional[str] = typer.Option(None, help="Session id (default: active session)"),
+    auto_confirm: bool = typer.Option(False, help="Auto confirm high-risk actions in background"),
+    max_retries: int = typer.Option(settings.queue_max_retries, help="Max retries for this task"),
+) -> None:
+    sid, user_ctx = resolve_session(session_store, session_id)
+    if not sid or not user_ctx:
+        print("No active session. Please run login first.")
+        return
+    task = task_queue.enqueue(command=command, session_id=sid, auto_confirm=auto_confirm, max_retries=max_retries)
+    print(json.dumps(task.to_dict(), ensure_ascii=False, indent=2))
+
+
+@app.command("queue-status")
+def queue_status() -> None:
+    print(json.dumps({"stats": task_queue.stats(), "tasks": [t.to_dict() for t in task_queue.list_all()]}, ensure_ascii=False, indent=2))
+
+
+@app.command("worker")
+def worker_cmd(
+    once: bool = typer.Option(False, help="Process one task and exit"),
+    stop_after: int = typer.Option(0, help="Stop after N processed tasks in loop mode"),
+) -> None:
+    if once:
+        print(json.dumps(worker.run_once(), ensure_ascii=False, indent=2))
+        return
+    limit = stop_after if stop_after > 0 else None
+    print("Worker loop started. Press Ctrl+C to stop.")
+    worker.run_loop(stop_after=limit)
 
 
 @app.command()

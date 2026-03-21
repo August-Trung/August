@@ -129,3 +129,32 @@
 
 ### Next Step
 - Flow 05: background runtime and queue worker for durable task automation.
+
+## 2026-03-21 (Flow 05 update)
+
+### Delivered
+- Created branch `codex/flow-05-background-worker`.
+- Added durable queue module `futureos/queue.py`.
+- Implemented background worker with:
+  - `run_once`
+  - loop mode with poll interval
+  - retry/backoff policy
+  - dead-letter fallback
+- Added CLI commands:
+  - `enqueue`
+  - `queue-status`
+  - `worker`
+- Integrated queue controls into UI Dashboard and Chat enqueue flow.
+- Added queue unit tests and Flow 05 testcase coverage (F-006, F-007).
+
+### Decisions
+- Queue persists locally in `data/task_queue.json`.
+- Dead-letter entries persist in `data/dead_letter.jsonl`.
+- Worker reuses the same execution engine and policy/session controls as CLI/UI direct runs.
+
+### Risks
+- Local-file queue is not multi-process safe under heavy parallel write load.
+- Worker loop currently runs in foreground process; service wrapper remains future work.
+
+### Next Step
+- Hardening and productionization: service wrapper, locking strategy, and faster file search.
