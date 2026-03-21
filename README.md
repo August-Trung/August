@@ -27,13 +27,15 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy .env.example .env
-python run.py --role owner --allow-c-drive-full "tim ban thao lap trinh trong o D va gui zalo cho sep, gui email cho team"
+python run.py login --role owner --actor august --allow-c-drive-full --secret 123456
+python run.py run "tim ban thao lap trinh trong o D va gui zalo cho sep, gui email cho team"
 ```
 
 Interactive mode:
 
 ```powershell
-python run.py
+python run.py login --role user --actor local-user
+python run.py run
 ```
 
 ## 2) Environment
@@ -53,6 +55,12 @@ OWNER_PIN=123456
 DEV_SECRET=
 DEFAULT_ROLE=user
 ALLOW_C_DRIVE_FULL=false
+SESSION_TTL_MINUTES=120
+AUTH_MAX_FAILURES=3
+AUTH_LOCK_MINUTES=15
+VOICE_CONFIDENCE_THRESHOLD=0.78
+SENSITIVE_RATE_LIMIT_COUNT=5
+SENSITIVE_RATE_LIMIT_WINDOW_SEC=300
 
 # Email (optional when DRY_RUN=false)
 SMTP_HOST=
@@ -72,6 +80,9 @@ ZALO_ACCESS_TOKEN=
 - Ask for confirmation for high-risk actions
 - Enforce role policy (`owner/dev/user/guest`) before execution
 - Enforce C-drive guard policy with owner toggle + strict dev/user/guest rules
+- Require authenticated session before command execution
+- Support session commands: `login`, `logout`, `whoami`, `sessions`
+- Add auth lockout and sensitive-action rate limiting
 - Search likely draft files under `D:\`
 - File CRUD actions (`read/write/delete`) with policy gate
 - Build outbound message payloads for Zalo + bulk email
@@ -81,7 +92,7 @@ ZALO_ACCESS_TOKEN=
 ## 4) Limitations
 
 - Voice stack is scaffold-level (real wakeword/STT/TTS engines are plug-in points)
-- Speaker verification uses owner PIN fallback in this MVP
+- Speaker verification still uses confidence input + PIN/secret fallback in this MVP
 - Zalo API behavior depends on OA/ZNS policy and your account permissions
 
 ## 5) Suggested next steps
@@ -90,3 +101,12 @@ ZALO_ACCESS_TOKEN=
 - Add job queue + retry/backoff for connectors
 - Add policy DSL for enterprise-grade safety
 - Add tests around parsing and dangerous-action gating
+
+## 6) Pre-check gate (required before each execution)
+
+```powershell
+python scripts\check_testcases.py
+python -m unittest discover -s tests
+```
+
+If either command fails, fix failures first before adding new feature work.

@@ -6,23 +6,23 @@
 
 ## Current Snapshot
 - Date: 2026-03-21
-- Active branch: `codex/flow-01-permission-policy`
-- Last focus: Permission and policy foundation
-- Run status: policy checks + audit logging enabled
+- Active branch: `codex/flow-02-session-identity`
+- Last focus: Session lifecycle + identity hardening
+- Run status: login/session-bound run is active
 
 ## Completed In Latest Session
-- Added role model: `owner/dev/user/guest`
-- Added policy middleware before execution
-- Added C-drive protection logic by role
-- Added `data/audit.jsonl` logging
-- Added file CRUD intents and execution handlers
+- Added session lifecycle (`login/logout/whoami/sessions`)
+- Enforced session-bound command execution
+- Added auth hardening (voice confidence + secret fallback + lockout)
+- Added sensitive-action rate limiting
+- Added test gate scripts and baseline unit tests
 
 ## In Progress
-- Flow 02 session and identity hardening
+- Flow 03 voice provider upgrade planning
 
 ## Open Risks / Blockers
 - Real Zalo integration depends on OA/ZNS policy and credentials
-- Voice ownership detection is still MVP-level (PIN/secret fallback)
+- Voice ownership detection still placeholder (needs real embedding verifier)
 - Path extraction and CRUD safety prompts need hardening
 
 ## Verify Quickly
@@ -47,9 +47,9 @@ python run.py "tim ban thao lap trinh trong o D va gui zalo cho sep va gui email
 - `futureos/voice.py`
 
 ## Next 3 Priorities
-1. Flow 02: session + identity lifecycle (role login + stronger verification path).
-2. Add stricter confirm rules for file delete/write in sensitive locations.
-3. Build UI shell skeleton (chat + dashboard + settings) for Flow 04 staging.
+1. Flow 03: wire real Vietnamese STT/TTS adapter interfaces.
+2. Add real speaker verification adapter and confidence calibration.
+3. Start UI shell skeleton (chat + dashboard + settings) for Flow 04 staging.
 
 ## Instructions For New Chat
 - Ask assistant to read:

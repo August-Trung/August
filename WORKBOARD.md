@@ -13,20 +13,24 @@
 | Bulk email integration | building | SMTP available but untested in production |
 | Permission policy (owner/dev/user/guest) | done | Enforced before execution |
 | C drive protection policy | done | Deny-by-default + role-specific delete rules |
+| Session lifecycle (login/logout/whoami) | done | Session-bound execution is mandatory |
+| Identity hardening | done | Voice confidence + PIN/secret fallback + lockout |
+| Sensitive action rate limit | done | Window-based limit per session |
 | UI chat/voice | todo | Planned for Flow 4 |
 | Dashboard + settings | todo | Planned for Flow 4 |
 | Background runtime | todo | Planned for Flow 5 |
-| Test matrix and regression suite | building | Need formalized test cases |
+| Test matrix and regression suite | building | Unit tests + testcase gate added |
 
 ## This Execution Plan
-- Implement role-based permission matrix and policy middleware.
-- Add C-drive guard controls and audit logging.
-- Extend workflow surface with file CRUD actions gated by policy.
+- Enforce session-bound execution for all commands.
+- Implement identity hardening with confidence + secret fallback.
+- Add auth lockout and sensitive-action rate limiting.
+- Add pre-check gate (xlsx fail scan + unit tests).
 
 ## Next Execution Plan
-- Flow 02: Session + identity hardening (role login lifecycle + voice identity path).
-- Add stricter confirmation strategy for destructive local file actions.
-- Add unit tests for policy matrix and C-drive scenarios.
+- Flow 03: Vietnamese voice upgrade (wakeword + STT/TTS provider adapters).
+- Implement structured voice verifier adapter (real speaker embedding integration point).
+- Expand regression tests for session expiration and auth lockout behavior.
 
 ## Known Issues
 - File finder still broad; relevance ranking should be improved.
