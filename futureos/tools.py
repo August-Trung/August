@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import smtplib
+import shutil
 from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Any
@@ -102,3 +103,59 @@ def delete_file(path: str) -> dict[str, Any]:
         return {"mode": "dry_run", "path": str(p)}
     p.unlink(missing_ok=True)
     return {"mode": "deleted", "path": str(p)}
+
+
+def create_directory(path: str) -> dict[str, Any]:
+    p = Path(path)
+    if settings.dry_run:
+        return {"mode": "dry_run", "path": str(p), "operation": "mkdir"}
+    p.mkdir(parents=True, exist_ok=True)
+    return {"mode": "created", "path": str(p)}
+
+
+def move_path(src_path: str, dst_path: str) -> dict[str, Any]:
+    src = Path(src_path)
+    dst = Path(dst_path)
+    if settings.dry_run:
+        return {"mode": "dry_run", "src_path": str(src), "dst_path": str(dst), "operation": "move"}
+    if not src.exists():
+        raise FileNotFoundError(f"Source not found: {src}")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(src), str(dst))
+    return {"mode": "moved", "src_path": str(src), "dst_path": str(dst)}
+
+
+def copy_path(src_path: str, dst_path: str) -> dict[str, Any]:
+    src = Path(src_path)
+    dst = Path(dst_path)
+    if settings.dry_run:
+        return {"mode": "dry_run", "src_path": str(src), "dst_path": str(dst), "operation": "copy"}
+    if not src.exists():
+        raise FileNotFoundError(f"Source not found: {src}")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if src.is_dir():
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+    else:
+        shutil.copy2(src, dst)
+    return {"mode": "copied", "src_path": str(src), "dst_path": str(dst)}
+
+
+def rename_path(src_path: str, new_name: str) -> dict[str, Any]:
+    src = Path(src_path)
+    dst = src.with_name(new_name)
+    if settings.dry_run:
+        return {"mode": "dry_run", "src_path": str(src), "dst_path": str(dst), "operation": "rename"}
+    if not src.exists():
+        raise FileNotFoundError(f"Source not found: {src}")
+    src.rename(dst)
+    return {"mode": "renamed", "src_path": str(src), "dst_path": str(dst)}
+
+
+def list_path(path: str, limit: int = 50) -> dict[str, Any]:
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"Path not found: {path}")
+    if not p.is_dir():
+        return {"path": str(p), "items": [str(p)], "count": 1}
+    items = sorted([str(x) for x in p.iterdir()], key=lambda x: x.lower())[:limit]
+    return {"path": str(p), "items": items, "count": len(items)}

@@ -188,3 +188,28 @@
 
 ### Next Step
 - Hardening Sprint 2: service wrapper, stronger locking, and microphone streaming voice path.
+
+## 2026-03-22 (Core File Ops Hotfix)
+
+### Delivered
+- Added new intents:
+  - `dir_create`
+  - `path_move`
+  - `path_copy`
+  - `path_rename`
+  - `path_list`
+- Added tools/workflows for folder and path operations.
+- Upgraded Vietnamese router for multi-step command parsing:
+  - "tao thu muc ... o desktop roi di chuyen ... vao backup o d"
+- Updated policy checks for new path intents and C-drive rules.
+- Added tests and testcase automation for core file ops (`F-010`).
+
+### Decisions
+- Keep new file operations behind existing policy and confirmation gates.
+- Preserve default dry-run for safe rollout.
+
+### Risks
+- Path extraction is heuristic-based; still needs richer NLP/path parser for edge cases.
+
+### Next Step
+- Sprint 2 parser upgrade: robust path/entity extraction and multilingual intent tuning.

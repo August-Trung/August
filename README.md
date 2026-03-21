@@ -31,6 +31,7 @@ python run.py voice-enroll --actor august --passphrase "toi la chu may future"
 python run.py voice-login --role owner --actor august --allow-c-drive-full --secret 123456
 python run.py login --role owner --actor august --allow-c-drive-full --secret 123456
 python run.py run "tim ban thao lap trinh trong o D va gui zalo cho sep, gui email cho team"
+python run.py run "tao thu muc zzz o desktop roi di chuyen vao thu muc backup trong o d"
 ```
 
 Interactive mode:
@@ -124,7 +125,11 @@ ZALO_ACCESS_TOKEN=
 - Worker single-instance lock + heartbeat
 - Tamper-evident hash chain for history/audit logs (`verify-logs`)
 - Search likely draft files under `D:\`
-- File CRUD actions (`read/write/delete`) with policy gate
+- File/path operations with policy gate:
+  - `read/write/delete`
+  - `create directory`
+  - `move/copy/rename`
+  - `list folder`
 - Build outbound message payloads for Zalo + bulk email
 - Execute in `dry-run` (safe) or real mode
 - Save action history to `data/history.jsonl` and policy audits to `data/audit.jsonl`

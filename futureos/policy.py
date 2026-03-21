@@ -27,26 +27,34 @@ def evaluate_action(action: Action, user: UserContext) -> PolicyDecision:
     if action.intent == IntentType.SEND_BULK_EMAIL and user.role in {Role.USER, Role.GUEST}:
         return PolicyDecision(allowed=False, reason="Bulk email is restricted to owner/dev.")
 
-    if action.intent in {IntentType.FILE_WRITE, IntentType.FILE_DELETE} and user.role == Role.GUEST:
+    if action.intent in {
+        IntentType.FILE_WRITE,
+        IntentType.FILE_DELETE,
+        IntentType.DIR_CREATE,
+        IntentType.PATH_MOVE,
+        IntentType.PATH_COPY,
+        IntentType.PATH_RENAME,
+    } and user.role == Role.GUEST:
         return PolicyDecision(allowed=False, reason="Guest cannot modify files.")
 
-    path = action.args.get("path")
-    if path:
-        c_drive_decision = _check_c_drive_policy(path, action.intent, user)
-        if c_drive_decision is not None:
-            return c_drive_decision
+    for key in ["path", "src_path", "dst_path"]:
+        path = action.args.get(key)
+        if path:
+            c_drive_decision = _check_c_drive_policy(path, action.intent, user)
+            if c_drive_decision is not None:
+                return c_drive_decision
 
-    if action.intent == IntentType.FILE_DELETE:
+    if action.intent in {IntentType.FILE_DELETE, IntentType.PATH_MOVE, IntentType.PATH_RENAME}:
         return PolicyDecision(
             allowed=True,
-            reason="File delete allowed with confirmation.",
+            reason="Destructive path operation allowed with confirmation.",
             needs_confirmation=True,
         )
 
-    if action.intent == IntentType.FILE_WRITE:
+    if action.intent in {IntentType.FILE_WRITE, IntentType.DIR_CREATE, IntentType.PATH_COPY}:
         return PolicyDecision(
             allowed=True,
-            reason="File write allowed with confirmation.",
+            reason="Path write operation allowed with confirmation.",
             needs_confirmation=True,
         )
 
@@ -90,17 +98,24 @@ def _check_c_drive_policy(path: str, intent: IntentType, user: UserContext) -> P
     if user.role == Role.OWNER:
         if user.allow_c_drive_full:
             return PolicyDecision(allowed=True, reason="Owner enabled full C drive access.")
-        if intent == IntentType.FILE_DELETE:
+        if intent in {IntentType.FILE_DELETE, IntentType.PATH_MOVE, IntentType.PATH_RENAME}:
             return PolicyDecision(allowed=False, reason="Owner must enable full C access to delete in C drive.")
         return PolicyDecision(allowed=True, reason="Owner limited C drive access (non-delete).")
 
     if user.role == Role.USER:
-        if intent == IntentType.FILE_DELETE:
+        if intent in {IntentType.FILE_DELETE, IntentType.PATH_MOVE, IntentType.PATH_RENAME}:
             return PolicyDecision(allowed=False, reason="User cannot delete on C drive.")
         return PolicyDecision(allowed=True, reason="User has basic C drive access (non-delete).")
 
     if user.role == Role.GUEST:
-        if intent in {IntentType.FILE_WRITE, IntentType.FILE_DELETE}:
+        if intent in {
+            IntentType.FILE_WRITE,
+            IntentType.FILE_DELETE,
+            IntentType.DIR_CREATE,
+            IntentType.PATH_MOVE,
+            IntentType.PATH_COPY,
+            IntentType.PATH_RENAME,
+        }:
             return PolicyDecision(allowed=False, reason="Guest cannot modify C drive.")
         return PolicyDecision(allowed=True, reason="Guest read-only access on C drive.")
 

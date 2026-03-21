@@ -31,6 +31,12 @@ class PolicyTests(unittest.TestCase):
         decision = evaluate_action(action, guest)
         self.assertFalse(decision.allowed)
 
+    def test_user_move_on_c_drive_denied(self) -> None:
+        action = Action(intent=IntentType.PATH_MOVE, args={"src_path": "C:\\a", "dst_path": "D:\\backup\\a"})
+        user = UserContext(role=Role.USER, allow_c_drive_full=False, actor="u2")
+        decision = evaluate_action(action, user)
+        self.assertFalse(decision.allowed)
+
 
 if __name__ == "__main__":
     unittest.main()
