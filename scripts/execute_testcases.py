@@ -22,6 +22,7 @@ from futureos.safety import AUDIT_FILE
 from futureos.session import ACTIVE_SESSION_FILE, SESSIONS_FILE, SessionStore
 from futureos.voice import VoiceEngine
 from futureos.workflows import execute_action
+from futureos.queue import DEAD_LETTER_FILE, QUEUE_FILE, BackgroundWorker, TaskQueue
 
 
 @dataclass
@@ -32,7 +33,7 @@ class CaseResult:
 
 
 def _reset_runtime_files() -> None:
-    for p in [AUTH_STATE_FILE, SESSIONS_FILE, ACTIVE_SESSION_FILE, AUDIT_FILE]:
+    for p in [AUTH_STATE_FILE, SESSIONS_FILE, ACTIVE_SESSION_FILE, AUDIT_FILE, QUEUE_FILE, DEAD_LETTER_FILE]:
         if p.exists():
             p.unlink(missing_ok=True)
 
@@ -70,6 +71,25 @@ def _run_cases() -> dict[str, CaseResult]:
         results["F-005"] = CaseResult("Pass", "streamlit import ok", "UI dependency available.")
     except Exception as e:
         results["F-005"] = CaseResult("Fail", str(e), "UI dependency missing.")
+
+    # Flow 05 background worker checks
+    _reset_runtime_files()
+    q_store = SessionStore()
+    q_rec = q_store.create_session(UserContext(role=Role.OWNER, allow_c_drive_full=False, actor="tc-queue"))
+    q = TaskQueue()
+    w = BackgroundWorker(q, q_store)
+    q_task = q.enqueue("tim file o d", q_rec.session_id, auto_confirm=False, max_retries=1)
+    q_out = w.run_once()
+    q_ok = q_out.get("ok", False) and q_out.get("task_id") == q_task.id
+    results["F-006"] = CaseResult("Pass" if q_ok else "Fail", json.dumps(q_out, ensure_ascii=False), "Queue enqueue/process one.")
+
+    _reset_runtime_files()
+    q = TaskQueue()
+    w = BackgroundWorker(q, SessionStore())
+    q.enqueue("tim file o d", "missing-session", auto_confirm=False, max_retries=0)
+    dead_out = w.run_once()
+    dead_ok = (not dead_out.get("ok", True)) and DEAD_LETTER_FILE.exists()
+    results["F-007"] = CaseResult("Pass" if dead_ok else "Fail", json.dumps(dead_out, ensure_ascii=False), "Dead-letter on unrecoverable task.")
 
     # Permission
     guest = UserContext(role=Role.GUEST, allow_c_drive_full=False, actor="tc-guest")

@@ -10,12 +10,15 @@ import streamlit as st
 from futureos.auth import authenticate_login
 from futureos.config import settings
 from futureos.engine import execute_command, resolve_session
+from futureos.queue import BackgroundWorker, TaskQueue
 from futureos.session import SessionStore
 from futureos.voice import VoiceEngine
 
 st.set_page_config(page_title="futureOS Control Center", layout="wide")
 
 session_store = SessionStore()
+task_queue = TaskQueue()
+worker = BackgroundWorker(task_queue, session_store)
 voice = VoiceEngine()
 
 
@@ -48,7 +51,7 @@ def _run_gate() -> tuple[int, str]:
 
 
 st.title("futureOS Control Center")
-st.caption("Flow 04 UI shell: chat, dashboard, settings, and test gate.")
+st.caption("UI shell: chat, voice, dashboard, settings, test gate, and queue worker controls.")
 
 with st.sidebar:
     st.subheader("Session Login")
@@ -87,7 +90,8 @@ with tabs[0]:
         st.code(json.dumps({"session_id": sid, "user": user_ctx.model_dump()}, ensure_ascii=False, indent=2))
         cmd = st.text_area("Command", value="tim ban thao lap trinh trong o D")
         auto_confirm = st.checkbox("Auto confirm high-risk actions", value=False)
-        if st.button("Run Command"):
+        col_run, col_queue = st.columns(2)
+        if col_run.button("Run Command"):
             result = execute_command(
                 raw_text=cmd,
                 session_id=sid,
@@ -96,6 +100,10 @@ with tabs[0]:
                 confirm_func=(lambda: auto_confirm),
             )
             st.json(result)
+        if col_queue.button("Enqueue Command"):
+            task = task_queue.enqueue(command=cmd, session_id=sid, auto_confirm=auto_confirm)
+            st.success(f"Queued task: {task.id}")
+            st.json(task.to_dict())
 
 with tabs[1]:
     st.subheader("Voice Profile")
@@ -125,6 +133,11 @@ with tabs[2]:
             for s in sessions
         ]
     )
+    qstats = task_queue.stats()
+    st.markdown("**Queue**")
+    st.json({"stats": qstats, "tasks": [t.to_dict() for t in task_queue.list_all()]})
+    if st.button("Process One Queued Task"):
+        st.json(worker.run_once())
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("**Recent History**")

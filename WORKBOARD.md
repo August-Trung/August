@@ -18,18 +18,18 @@
 | Sensitive action rate limit | done | Window-based limit per session |
 | UI chat/voice | done | Streamlit shell with session-bound execution |
 | Dashboard + settings | done | Session/log/settings + gate panel |
-| Background runtime | todo | Planned for Flow 5 |
+| Background runtime | done | Queue + worker with retry/backoff + dead-letter |
 | Test matrix and regression suite | done | `Not Run` cleanup + automation + evidence image |
 
 ## This Execution Plan
-- Build Flow 04 UI shell (chat + voice + dashboard + settings + test gate).
-- Refactor execution core for CLI/UI reuse.
-- Keep gate strict: no `Fail` and no `Not Run`.
+- Build Flow 05 background runtime with durable task queue.
+- Add CLI/UI integration for queue and worker operations.
+- Extend testcase automation for queue/dead-letter coverage.
 
 ## Next Execution Plan
-- Flow 05: background runtime/worker mode and queue-based outbound tasks.
-- Add persistent UI auth workflow and safer secret handling.
-- Integrate real microphone STT streaming path into voice tab.
+- Hardening sprint: optimize file-search latency and unit-test runtime.
+- Add UI authentication persistence and secure secret handling.
+- Integrate microphone streaming STT and real speaker-embedding verifier.
 
 ## Known Issues
 - File finder still broad; relevance ranking should be improved.

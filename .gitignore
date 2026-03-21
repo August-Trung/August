@@ -9,3 +9,5 @@ data/active_session.txt
 data/auth_state.json
 data/voice_profiles.json
 data/tts_last.mp3
+data/task_queue.json
+data/dead_letter.jsonl
