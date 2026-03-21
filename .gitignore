@@ -7,3 +7,5 @@ data/audit.jsonl
 data/sessions.json
 data/active_session.txt
 data/auth_state.json
+data/voice_profiles.json
+data/tts_last.mp3

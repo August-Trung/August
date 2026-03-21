@@ -14,6 +14,7 @@ def main() -> int:
 
     wb = load_workbook(path)
     failures: list[tuple[str, str, str]] = []
+    pending: list[tuple[str, str, str]] = []
     for sheet in wb.worksheets:
         for row in sheet.iter_rows(min_row=2, values_only=True):
             if not row:
@@ -23,14 +24,21 @@ def main() -> int:
             notes = str(row[11] or "").strip()
             if status == "fail":
                 failures.append((sheet.title, case_id, notes))
+            elif status == "not run":
+                pending.append((sheet.title, case_id, notes))
 
     if failures:
         print("Found failed test cases:")
         for sheet, case_id, notes in failures:
             print(f"- [{sheet}] {case_id}: {notes}")
+    if pending:
+        print("Found NOT RUN test cases (must be executed first):")
+        for sheet, case_id, notes in pending:
+            print(f"- [{sheet}] {case_id}: {notes}")
+    if failures or pending:
         return 2
 
-    print("No failed test case rows in TEST_CASES.xlsx.")
+    print("No failed or not-run test case rows in TEST_CASES.xlsx.")
     return 0
 
 

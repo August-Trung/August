@@ -27,6 +27,8 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy .env.example .env
+python run.py voice-enroll --actor august --passphrase "toi la chu may future"
+python run.py voice-login --role owner --actor august --allow-c-drive-full --secret 123456
 python run.py login --role owner --actor august --allow-c-drive-full --secret 123456
 python run.py run "tim ban thao lap trinh trong o D va gui zalo cho sep, gui email cho team"
 ```
@@ -61,6 +63,12 @@ AUTH_LOCK_MINUTES=15
 VOICE_CONFIDENCE_THRESHOLD=0.78
 SENSITIVE_RATE_LIMIT_COUNT=5
 SENSITIVE_RATE_LIMIT_WINDOW_SEC=300
+VOICE_LANGUAGE=vi-VN
+VOICE_WAKE_WORD=xin chao future
+USE_OPENAI_STT=false
+USE_OPENAI_TTS=false
+OPENAI_TTS_VOICE=alloy
+VOICE_PROFILE_THRESHOLD=0.78
 
 # Email (optional when DRY_RUN=false)
 SMTP_HOST=
@@ -82,7 +90,9 @@ ZALO_ACCESS_TOKEN=
 - Enforce C-drive guard policy with owner toggle + strict dev/user/guest rules
 - Require authenticated session before command execution
 - Support session commands: `login`, `logout`, `whoami`, `sessions`
+- Support voice identity commands: `voice-enroll`, `voice-login`
 - Add auth lockout and sensitive-action rate limiting
+- Vietnamese wakeword normalization and voice profile matching
 - Search likely draft files under `D:\`
 - File CRUD actions (`read/write/delete`) with policy gate
 - Build outbound message payloads for Zalo + bulk email
@@ -92,7 +102,7 @@ ZALO_ACCESS_TOKEN=
 ## 4) Limitations
 
 - Voice stack is scaffold-level (real wakeword/STT/TTS engines are plug-in points)
-- Speaker verification still uses confidence input + PIN/secret fallback in this MVP
+- Speaker verification uses passphrase similarity + fallback PIN/secret in this MVP
 - Zalo API behavior depends on OA/ZNS policy and your account permissions
 
 ## 5) Suggested next steps
@@ -107,6 +117,7 @@ ZALO_ACCESS_TOKEN=
 ```powershell
 python scripts\check_testcases.py
 python -m unittest discover -s tests
+python scripts\execute_testcases.py
 ```
 
-If either command fails, fix failures first before adding new feature work.
+If any command fails, fix failures first before adding new feature work.

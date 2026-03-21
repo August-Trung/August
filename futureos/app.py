@@ -5,7 +5,7 @@ from typing import Optional
 
 import typer
 
-from futureos.auth import authenticate_login, resolve_interactive_identity
+from futureos.auth import authenticate_login
 from futureos.config import settings
 from futureos.models import Action, IntentType, UserContext
 from futureos.policy import evaluate_plan, flatten_actions, should_confirm_from_policy
@@ -121,6 +121,44 @@ def login(
     print("Session is now active.")
 
 
+@app.command("voice-enroll")
+def voice_enroll(
+    actor: str = typer.Option(..., help="Actor id to bind voice profile"),
+    passphrase: str = typer.Option(..., help="Vietnamese passphrase for voice verification"),
+) -> None:
+    voice = VoiceEngine()
+    voice.enroll_actor_voice(actor=actor, passphrase=passphrase)
+    print(f"Voice profile saved for actor={actor}")
+
+
+@app.command("voice-login")
+def voice_login(
+    role: str = typer.Option(settings.default_role, help="owner/dev/user/guest"),
+    actor: str = typer.Option("voice-user", help="Actor id"),
+    allow_c_drive_full: bool = typer.Option(settings.allow_c_drive_full, help="Enable full C drive for owner"),
+    secret: str = typer.Option("", help="PIN or DEV secret fallback"),
+) -> None:
+    voice = VoiceEngine()
+    if not voice.wait_wakeword():
+        print("Wakeword mismatch.")
+        return
+    spoken = voice.capture_passphrase()
+    confidence = voice.verify_actor_voice(actor=actor, spoken_text=spoken)
+    user_ctx, message = authenticate_login(
+        role_raw=role,
+        actor=actor,
+        allow_c_drive_full=allow_c_drive_full,
+        secret=secret,
+        voice_confidence=confidence,
+    )
+    print(f"{message} (voice_confidence={confidence:.2f})")
+    if user_ctx is None:
+        return
+    record = session_store.create_session(user_ctx)
+    print(f"session_id={record.session_id}")
+    print("Session is now active.")
+
+
 @app.command()
 def logout(session_id: Optional[str] = typer.Option(None, help="Session id to revoke (default: active session)")) -> None:
     sid = session_id or session_store.get_active()
@@ -183,15 +221,12 @@ def run(
         print("Re-verify identity before command? (yes/no)")
         verify = input("> ").strip().lower() in {"yes", "y"}
         if verify:
-            re_ctx = resolve_interactive_identity()
-            if re_ctx is None:
-                print("Identity verification failed.")
+            spoken = voice.capture_passphrase()
+            confidence = voice.verify_actor_voice(actor=user_ctx.actor, spoken_text=spoken)
+            if confidence < settings.voice_profile_threshold:
+                print(f"Voice verification failed (confidence={confidence:.2f}).")
                 continue
-            # Keep strict session binding by opening a fresh session for new identity.
-            rec = session_store.create_session(re_ctx)
-            sid = rec.session_id
-            user_ctx = rec.user
-            print(f"Switched session: {sid}")
+            print(f"Voice verification passed (confidence={confidence:.2f}).")
 
         text = voice.stt()
         if text.strip().lower() in {"exit", "quit"}:

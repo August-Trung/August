@@ -6,23 +6,23 @@
 
 ## Current Snapshot
 - Date: 2026-03-21
-- Active branch: `codex/flow-02-session-identity`
-- Last focus: Session lifecycle + identity hardening
-- Run status: login/session-bound run is active
+- Active branch: `codex/flow-03-voice-upgrade`
+- Last focus: Vietnamese voice upgrade + testcase execution cleanup
+- Run status: voice-enroll/voice-login enabled
 
 ## Completed In Latest Session
-- Added session lifecycle (`login/logout/whoami/sessions`)
-- Enforced session-bound command execution
-- Added auth hardening (voice confidence + secret fallback + lockout)
-- Added sensitive-action rate limiting
-- Added test gate scripts and baseline unit tests
+- Cleared all `Not Run` testcase rows by execution automation
+- Added evidence image output for testcase run
+- Added voice profile store + wakeword normalization
+- Added `voice-enroll` and `voice-login` commands
+- Added voice unit tests
 
 ## In Progress
-- Flow 03 voice provider upgrade planning
+- Flow 04 planning (UI shell + dashboard + settings)
 
 ## Open Risks / Blockers
 - Real Zalo integration depends on OA/ZNS policy and credentials
-- Voice ownership detection still placeholder (needs real embedding verifier)
+- Voice ownership detection still passphrase-based (needs real embedding verifier)
 - Path extraction and CRUD safety prompts need hardening
 
 ## Verify Quickly
@@ -47,9 +47,9 @@ python run.py "tim ban thao lap trinh trong o D va gui zalo cho sep va gui email
 - `futureos/voice.py`
 
 ## Next 3 Priorities
-1. Flow 03: wire real Vietnamese STT/TTS adapter interfaces.
-2. Add real speaker verification adapter and confidence calibration.
-3. Start UI shell skeleton (chat + dashboard + settings) for Flow 04 staging.
+1. Flow 04: implement UI shell (chat + dashboard + settings).
+2. Add runtime panel to display session role and policy decisions.
+3. Prepare real speaker-embedding verifier adapter integration point.
 
 ## Instructions For New Chat
 - Ask assistant to read:

@@ -76,3 +76,30 @@
 
 ### Next Step
 - Flow 03: replace voice placeholders with provider adapters and Vietnamese STT/TTS wiring.
+
+## 2026-03-21 (Flow 03 update)
+
+### Delivered
+- Created branch `codex/flow-03-voice-upgrade`.
+- Cleared all `Not Run` rows in `TEST_CASES.xlsx` via executable checks.
+- Added testcase execution automation: `scripts/execute_testcases.py`.
+- Added evidence image generation: `data/test_evidence_flow03.png`.
+- Upgraded voice module:
+  - Vietnamese wakeword normalization
+  - voice profile enroll/verify store
+  - STT/TTS adapter path (console + optional OpenAI)
+- Added commands:
+  - `voice-enroll`
+  - `voice-login`
+- Added voice unit tests.
+
+### Decisions
+- Test gate now blocks both `Fail` and `Not Run`.
+- Voice profile matching uses passphrase similarity in this stage; speaker-embedding engine remains next.
+
+### Risks
+- Passphrase similarity is weaker than true biometric speaker verification.
+- OpenAI STT/TTS paths need credential and runtime environment checks for production.
+
+### Next Step
+- Flow 04: build UI shell and dashboard/settings with session-aware controls.
