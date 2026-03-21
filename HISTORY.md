@@ -49,3 +49,30 @@
 
 ### Next Step
 - Flow 02: session lifecycle + stronger identity binding (voice/session mapping).
+
+## 2026-03-21 (Flow 02 update)
+
+### Delivered
+- Created branch `codex/flow-02-session-identity`.
+- Added session manager with persisted records (`data/sessions.json`) and active session pointer.
+- Added CLI commands: `login`, `logout`, `whoami`, `sessions`, and session-bound `run`.
+- Added identity hardening with:
+  - voice confidence threshold
+  - PIN/secret fallback
+  - auth failure lockout policy
+- Added sensitive-action rate limiting per session window.
+- Added test gate tools:
+  - `scripts/check_testcases.py` (fails if any testcase row has `Status=Fail`)
+  - unit tests in `tests/`
+
+### Decisions
+- Every command execution now requires a valid session.
+- Identity re-check in interactive mode can open a switched session.
+- Pre-check rule is enforced: testcase-fail scan + unit tests before feature work.
+
+### Risks
+- Voice confidence is still input-based placeholder, not yet real speaker embedding.
+- Session store is file-based; concurrency and multi-device sync are not yet addressed.
+
+### Next Step
+- Flow 03: replace voice placeholders with provider adapters and Vietnamese STT/TTS wiring.
