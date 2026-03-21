@@ -57,6 +57,20 @@ def _run_cases() -> dict[str, CaseResult]:
     else:
         results["F-001"] = CaseResult("Fail", json.dumps(checks, ensure_ascii=False), "Plan denied/unexpected.")
 
+    # Flow 04 UI checks
+    ui_path = Path("futureos/ui_app.py")
+    results["F-004"] = CaseResult(
+        "Pass" if ui_path.exists() else "Fail",
+        f"ui_exists={ui_path.exists()}",
+        "UI shell file exists.",
+    )
+    try:
+        import streamlit  # noqa: F401
+
+        results["F-005"] = CaseResult("Pass", "streamlit import ok", "UI dependency available.")
+    except Exception as e:
+        results["F-005"] = CaseResult("Fail", str(e), "UI dependency missing.")
+
     # Permission
     guest = UserContext(role=Role.GUEST, allow_c_drive_full=False, actor="tc-guest")
     dec = evaluate_action(Action(intent=IntentType.FILE_DELETE, args={"path": "C:\\tmp\\a.txt"}), guest)
@@ -174,7 +188,7 @@ def _render_evidence(results: dict[str, CaseResult]) -> Path:
     draw = ImageDraw.Draw(img)
     font = ImageFont.load_default()
     draw.multiline_text((30, 30), text, fill=(220, 240, 255), font=font, spacing=6)
-    out = Path("data/test_evidence_flow03.png")
+    out = Path("data/test_evidence_latest.png")
     out.parent.mkdir(parents=True, exist_ok=True)
     img.save(out)
     return out

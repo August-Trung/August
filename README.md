@@ -40,6 +40,12 @@ python run.py login --role user --actor local-user
 python run.py run
 ```
 
+UI mode:
+
+```powershell
+streamlit run futureos/ui_app.py
+```
+
 ## 2) Environment
 
 Edit `.env`:
@@ -93,6 +99,7 @@ ZALO_ACCESS_TOKEN=
 - Support voice identity commands: `voice-enroll`, `voice-login`
 - Add auth lockout and sensitive-action rate limiting
 - Vietnamese wakeword normalization and voice profile matching
+- UI shell with tabs: `Chat`, `Voice`, `Dashboard`, `Settings`, `Test Gate`
 - Search likely draft files under `D:\`
 - File CRUD actions (`read/write/delete`) with policy gate
 - Build outbound message payloads for Zalo + bulk email
@@ -104,6 +111,7 @@ ZALO_ACCESS_TOKEN=
 - Voice stack is scaffold-level (real wakeword/STT/TTS engines are plug-in points)
 - Speaker verification uses passphrase similarity + fallback PIN/secret in this MVP
 - Zalo API behavior depends on OA/ZNS policy and your account permissions
+- UI currently uses typed simulation for voice capture (no direct mic capture yet)
 
 ## 5) Suggested next steps
 

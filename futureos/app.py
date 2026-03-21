@@ -7,95 +7,35 @@ import typer
 
 from futureos.auth import authenticate_login
 from futureos.config import settings
-from futureos.models import Action, IntentType, UserContext
-from futureos.policy import evaluate_plan, flatten_actions, should_confirm_from_policy
-from futureos.router import route
-from futureos.safety import ask_confirmation, should_require_confirmation, write_audit, write_history
+from futureos.engine import execute_command, resolve_session
+from futureos.safety import ask_confirmation
 from futureos.session import SessionStore
 from futureos.voice import VoiceEngine
-from futureos.workflows import execute_action
 
 app = typer.Typer(add_completion=False)
 session_store = SessionStore()
 
 
-def _is_sensitive(actions: list[Action]) -> bool:
-    sensitive_intents = {
-        IntentType.SEND_ZALO,
-        IntentType.SEND_BULK_EMAIL,
-        IntentType.FILE_DELETE,
-        IntentType.FILE_WRITE,
-    }
-    return any(action.intent in sensitive_intents for action in flatten_actions(actions))
-
-
-def _run_command(raw_text: str, user_ctx: UserContext, session_id: str, voice: VoiceEngine | None = None) -> None:
-    plan = route(raw_text)
-    actions: list[Action] = plan.actions
-    if not actions:
-        print("Khong co hanh dong nao duoc tao.")
-        return
-
+def _run_command(raw_text: str, session_id: str, user_ctx, voice: VoiceEngine | None = None) -> None:
+    result = execute_command(
+        raw_text=raw_text,
+        session_id=session_id,
+        user_ctx=user_ctx,
+        session_store=session_store,
+        confirm_func=ask_confirmation,
+    )
     print("=== Plan ===")
-    print(plan.model_dump_json(indent=2))
-
-    allowed, checks = evaluate_plan(actions, user_ctx)
+    print(json.dumps(result.get("plan", {}), ensure_ascii=False, indent=2))
     print("=== Policy ===")
-    print(json.dumps(checks, ensure_ascii=False, indent=2))
-    write_audit(
-        {"event": "policy_check", "session_id": session_id, "user": user_ctx.model_dump(), "text": raw_text, "checks": checks}
-    )
-    if not allowed:
-        print("Policy denied this request.")
-        write_history(
-            {"event": "policy_denied", "session_id": session_id, "text": raw_text, "user": user_ctx.model_dump(), "checks": checks}
-        )
+    print(json.dumps(result.get("policy", []), ensure_ascii=False, indent=2))
+    if not result.get("ok"):
+        print(result.get("error", "Failed"))
         return
-
-    if _is_sensitive(actions):
-        if not session_store.within_sensitive_rate_limit(session_id):
-            print("Rate limit exceeded for sensitive actions.")
-            write_history({"event": "rate_limited", "session_id": session_id, "text": raw_text})
-            return
-        session_store.touch_sensitive(session_id)
-
-    need_confirm = (
-        plan.needs_confirmation or should_require_confirmation(actions) or should_confirm_from_policy(actions, user_ctx)
-    )
-    if need_confirm:
-        allowed_confirm = ask_confirmation()
-        if not allowed_confirm:
-            print("Da huy theo xac nhan nguoi dung.")
-            write_history({"event": "cancelled", "session_id": session_id, "text": raw_text, "plan": plan.model_dump()})
-            return
-
-    for action in actions:
-        result = execute_action(action)
+    for item in result.get("results", []):
         print("=== Result ===")
-        print(json.dumps(result.model_dump(), ensure_ascii=False, indent=2))
-        write_history(
-            {
-                "event": "action_executed",
-                "session_id": session_id,
-                "text": raw_text,
-                "action": action.model_dump(),
-                "result": result.model_dump(),
-            }
-        )
+        print(json.dumps(item, ensure_ascii=False, indent=2))
         if voice:
-            voice.tts(result.detail)
-
-
-def _resolve_session(required_session_id: str | None) -> tuple[str, UserContext] | tuple[None, None]:
-    session_id = required_session_id or session_store.get_active()
-    if not session_id:
-        print("No active session. Please run login first.")
-        return None, None
-    session = session_store.get(session_id)
-    if session is None:
-        print("Session is missing/expired. Please login again.")
-        return None, None
-    return session_id, session.user
+            voice.tts(item.get("detail", "Done"))
 
 
 @app.command()
@@ -173,8 +113,9 @@ def logout(session_id: Optional[str] = typer.Option(None, help="Session id to re
 
 @app.command("whoami")
 def whoami(session_id: Optional[str] = typer.Option(None, help="Session id (default: active session)")) -> None:
-    sid, user_ctx = _resolve_session(session_id)
+    sid, user_ctx = resolve_session(session_store, session_id)
     if not sid or not user_ctx:
+        print("No active valid session.")
         return
     print(json.dumps({"session_id": sid, "user": user_ctx.model_dump()}, ensure_ascii=False, indent=2))
 
@@ -201,12 +142,13 @@ def run(
     session_id: Optional[str] = typer.Option(None, help="Session id (default: active session)"),
 ) -> None:
     voice = VoiceEngine()
-    sid, user_ctx = _resolve_session(session_id)
+    sid, user_ctx = resolve_session(session_store, session_id)
     if not sid or not user_ctx:
+        print("No active session. Please run login first.")
         return
 
     if command:
-        _run_command(command, user_ctx=user_ctx, session_id=sid)
+        _run_command(command, session_id=sid, user_ctx=user_ctx)
         return
 
     print("futureOS interactive mode")
@@ -231,7 +173,7 @@ def run(
         text = voice.stt()
         if text.strip().lower() in {"exit", "quit"}:
             break
-        _run_command(text, user_ctx=user_ctx, session_id=sid, voice=voice)
+        _run_command(text, session_id=sid, user_ctx=user_ctx, voice=voice)
 
 
 def main() -> None:

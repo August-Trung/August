@@ -16,20 +16,20 @@
 | Session lifecycle (login/logout/whoami) | done | Session-bound execution is mandatory |
 | Identity hardening | done | Voice profile enroll/login + confidence + fallback + lockout |
 | Sensitive action rate limit | done | Window-based limit per session |
-| UI chat/voice | todo | Planned for Flow 4 |
-| Dashboard + settings | todo | Planned for Flow 4 |
+| UI chat/voice | done | Streamlit shell with session-bound execution |
+| Dashboard + settings | done | Session/log/settings + gate panel |
 | Background runtime | todo | Planned for Flow 5 |
-| Test matrix and regression suite | building | Unit tests + testcase gate added |
+| Test matrix and regression suite | done | `Not Run` cleanup + automation + evidence image |
 
 ## This Execution Plan
-- Clear all `Not Run` test cases and provide evidence artifact.
-- Build Flow 03 voice upgrade (VN wakeword/STT/TTS adapters + voice profile verify).
-- Extend CLI with `voice-enroll` and `voice-login`.
+- Build Flow 04 UI shell (chat + voice + dashboard + settings + test gate).
+- Refactor execution core for CLI/UI reuse.
+- Keep gate strict: no `Fail` and no `Not Run`.
 
 ## Next Execution Plan
-- Flow 04: UI shell (chat + dashboard + settings) with session-aware controls.
-- Add live test panel that reads `TEST_CASES.xlsx` status directly.
-- Harden file search latency and path extraction quality.
+- Flow 05: background runtime/worker mode and queue-based outbound tasks.
+- Add persistent UI auth workflow and safer secret handling.
+- Integrate real microphone STT streaming path into voice tab.
 
 ## Known Issues
 - File finder still broad; relevance ranking should be improved.
