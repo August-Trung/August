@@ -6,25 +6,24 @@
 
 ## Current Snapshot
 - Date: 2026-03-21
-- Active branch: `develop`
-- Last focus: Build Python MVP core pipeline
-- Run status: `python run.py` works in dry-run
+- Active branch: `codex/flow-01-permission-policy`
+- Last focus: Permission and policy foundation
+- Run status: policy checks + audit logging enabled
 
 ## Completed In Latest Session
-- Created core app scaffold (`futureos/*`)
-- Added rule-first router + optional AI parser
-- Added safety confirm + action history log
-- Added workflow actions (find draft, send Zalo, bulk email)
-- Added voice MVP interface (wakeword/pin/stt/tts stubs)
+- Added role model: `owner/dev/user/guest`
+- Added policy middleware before execution
+- Added C-drive protection logic by role
+- Added `data/audit.jsonl` logging
+- Added file CRUD intents and execution handlers
 
 ## In Progress
-- Project management operating model (git flow + tracking docs)
-- Permission matrix and policy engine (owner/dev/user/guest)
+- Flow 02 session and identity hardening
 
 ## Open Risks / Blockers
 - Real Zalo integration depends on OA/ZNS policy and credentials
-- Voice owner verification is still MVP-level (PIN fallback)
-- Full production hardening not done yet
+- Voice ownership detection is still MVP-level (PIN/secret fallback)
+- Path extraction and CRUD safety prompts need hardening
 
 ## Verify Quickly
 ```powershell
@@ -48,9 +47,9 @@ python run.py "tim ban thao lap trinh trong o D va gui zalo cho sep va gui email
 - `futureos/voice.py`
 
 ## Next 3 Priorities
-1. Define and implement permission/policy matrix (especially C drive guard).
-2. Build Flow 1 production baseline: router + Vietnamese intent robustness + audit events.
-3. Add UI shell (chat + dashboard + settings) and background runner skeleton.
+1. Flow 02: session + identity lifecycle (role login + stronger verification path).
+2. Add stricter confirm rules for file delete/write in sensitive locations.
+3. Build UI shell skeleton (chat + dashboard + settings) for Flow 04 staging.
 
 ## Instructions For New Chat
 - Ask assistant to read:

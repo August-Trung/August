@@ -27,7 +27,7 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 copy .env.example .env
-python run.py "tim ban thao lap trinh trong o D va gui zalo cho sep, gui email cho team"
+python run.py --role owner --allow-c-drive-full "tim ban thao lap trinh trong o D va gui zalo cho sep, gui email cho team"
 ```
 
 Interactive mode:
@@ -50,6 +50,9 @@ DRY_RUN=true
 # Wakeword / owner
 WAKE_WORD=hey future
 OWNER_PIN=123456
+DEV_SECRET=
+DEFAULT_ROLE=user
+ALLOW_C_DRIVE_FULL=false
 
 # Email (optional when DRY_RUN=false)
 SMTP_HOST=
@@ -67,10 +70,13 @@ ZALO_ACCESS_TOKEN=
 
 - Parse command by rule-first and optionally AI fallback
 - Ask for confirmation for high-risk actions
+- Enforce role policy (`owner/dev/user/guest`) before execution
+- Enforce C-drive guard policy with owner toggle + strict dev/user/guest rules
 - Search likely draft files under `D:\`
+- File CRUD actions (`read/write/delete`) with policy gate
 - Build outbound message payloads for Zalo + bulk email
 - Execute in `dry-run` (safe) or real mode
-- Save action history to `data/history.jsonl`
+- Save action history to `data/history.jsonl` and policy audits to `data/audit.jsonl`
 
 ## 4) Limitations
 

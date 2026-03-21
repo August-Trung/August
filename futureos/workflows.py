@@ -1,7 +1,14 @@
 from __future__ import annotations
 
 from futureos.models import Action, ExecutionResult, IntentType
-from futureos.tools import find_draft_files, send_bulk_email, send_zalo
+from futureos.tools import (
+    delete_file,
+    find_draft_files,
+    read_text_file,
+    send_bulk_email,
+    send_zalo,
+    write_text_file,
+)
 
 
 def execute_action(action: Action) -> ExecutionResult:
@@ -13,6 +20,22 @@ def execute_action(action: Action) -> ExecutionResult:
             detail=f"Found {len(files)} candidate file(s)",
             payload={"files": files},
         )
+
+    if action.intent == IntentType.FILE_READ:
+        resp = read_text_file(path=action.args.get("path", ""))
+        return ExecutionResult(ok=True, action=action.intent, detail="File read completed", payload=resp)
+
+    if action.intent == IntentType.FILE_WRITE:
+        resp = write_text_file(
+            path=action.args.get("path", ""),
+            content=action.args.get("content", ""),
+            append=bool(action.args.get("append", False)),
+        )
+        return ExecutionResult(ok=True, action=action.intent, detail="File write completed", payload=resp)
+
+    if action.intent == IntentType.FILE_DELETE:
+        resp = delete_file(path=action.args.get("path", ""))
+        return ExecutionResult(ok=True, action=action.intent, detail="File delete completed", payload=resp)
 
     if action.intent == IntentType.SEND_ZALO:
         resp = send_zalo(

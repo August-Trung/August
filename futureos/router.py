@@ -23,14 +23,45 @@ def route(text: str) -> Plan:
 def _rule_first(text: str) -> Plan:
     t = text.lower()
     actions: list[Action] = []
+    target_path = "C:\\sample.txt" if any(k in t for k in ["o c", "ổ c", "c:\\"]) else "D:\\Study\\sample.txt"
 
-    if any(k in t for k in ["ban thao", "draft", "file", "o d", "ổ d"]):
+    if any(k in t for k in ["ban thao", "draft", "tim file", "find file", "o d", "ổ d"]):
         actions.append(
             Action(
                 intent=IntentType.FIND_DRAFT,
                 args={"drive": "D:\\"},
                 risk="low",
                 reason="User asked to find draft/file in D drive",
+            )
+        )
+
+    if any(k in t for k in ["doc file", "read file", "xem file"]):
+        actions.append(
+            Action(
+                intent=IntentType.FILE_READ,
+                args={"path": target_path},
+                risk="low",
+                reason="Requested file read",
+            )
+        )
+
+    if any(k in t for k in ["ghi file", "write file", "cap nhat file", "cập nhật file"]):
+        actions.append(
+            Action(
+                intent=IntentType.FILE_WRITE,
+                args={"path": target_path, "content": "Updated by futureOS\n", "append": True},
+                risk="medium",
+                reason="Requested file write",
+            )
+        )
+
+    if any(k in t for k in ["xoa file", "xoá file", "delete file"]):
+        actions.append(
+            Action(
+                intent=IntentType.FILE_DELETE,
+                args={"path": target_path},
+                risk="high",
+                reason="Requested file deletion",
             )
         )
 
