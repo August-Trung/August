@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from typing import Optional
 
 import typer
@@ -28,15 +29,15 @@ def _run_command(raw_text: str, session_id: str, user_ctx, voice: VoiceEngine | 
         confirm_func=ask_confirmation,
     )
     print("=== Plan ===")
-    print(json.dumps(result.get("plan", {}), ensure_ascii=False, indent=2))
+    print(json.dumps(result.get("plan", {}), ensure_ascii=True, indent=2))
     print("=== Policy ===")
-    print(json.dumps(result.get("policy", []), ensure_ascii=False, indent=2))
+    print(json.dumps(result.get("policy", []), ensure_ascii=True, indent=2))
     if not result.get("ok"):
         print(result.get("error", "Failed"))
         return
     for item in result.get("results", []):
         print("=== Result ===")
-        print(json.dumps(item, ensure_ascii=False, indent=2))
+        print(json.dumps(item, ensure_ascii=True, indent=2))
         if voice:
             voice.tts(item.get("detail", "Done"))
 
@@ -240,4 +241,15 @@ def run(
 
 
 def main() -> None:
+    for stream_name in ("stdin", "stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream is not None and hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8")
+            except Exception:
+                pass
     app()
+
+
+if __name__ == "__main__":
+    main()

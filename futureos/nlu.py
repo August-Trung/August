@@ -13,6 +13,24 @@ ABBREV_MAP = {
     "ds": "danh sach",
     "mk": "mo",
     "xf": "xoa file",
+    "desk": "desktop",
+    "mh": "man hinh",
+    "timf": "tim file",
+}
+
+PHRASE_REPLACEMENTS = {
+    "man hinh desk": "desktop",
+    "man hinh desktop": "desktop",
+    "o man hinh desk": "desktop",
+    "o man hinh desktop": "desktop",
+    "o man hinh": "desktop",
+    "liueeju": "lieu",
+    "du lieu": "du_lieu",
+    "du lieuu": "du_lieu",
+    "vao do": "vao_do",
+    "roi vao": "roi vao",
+    "o d:": "o d",
+    "o d\\": "o d",
 }
 
 VOCAB = [
@@ -20,6 +38,8 @@ VOCAB = [
     "thu",
     "muc",
     "desktop",
+    "du",
+    "lieu",
     "di",
     "chuyen",
     "vao",
@@ -39,12 +59,22 @@ VOCAB = [
     "doc",
     "ghi",
     "xoa",
+    "tim",
+    "man",
+    "hinh",
+    "roi",
+    "timf",
+    "desktop",
+    "du_lieu",
 ]
 
 
 def normalize_text(text: str) -> str:
     t = text.strip().lower()
     t = "".join(ch for ch in unicodedata.normalize("NFD", t) if unicodedata.category(ch) != "Mn")
+    t = re.sub(r"[^a-z0-9_:\\\s]", " ", t)
+    for src, dst in PHRASE_REPLACEMENTS.items():
+        t = t.replace(src, dst)
     t = re.sub(r"\s+", " ", t)
     tokens = t.split(" ")
     expanded: list[str] = []

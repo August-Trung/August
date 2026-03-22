@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 class IntentType(str, Enum):
     FIND_DRAFT = "find_draft"
+    FILE_SEARCH = "file_search"
     FILE_READ = "file_read"
     FILE_WRITE = "file_write"
     FILE_DELETE = "file_delete"

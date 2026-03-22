@@ -22,17 +22,20 @@
 | Background runtime | done | Queue + worker + lock/heartbeat + retry/backoff + dead-letter |
 | Test matrix and regression suite | done | `Not Run` cleanup + automation + evidence image |
 | Core file ops parser (VN create+move) | done | Supports mkdir/move/copy/rename/list/zip intents |
+| CLI module entrypoint | done | Supports `python -m futureos --help` |
+| Router stability with AI enabled | done | High-confidence rule now wins before AI fallback |
+| UTF-8 CLI hardening | done | Reconfigure stdin/stdout/stderr for Vietnamese text |
 
 ## This Execution Plan
-- Core file ops hotfix:
-- Add missing basic user intents (mkdir/move/copy/rename/list).
-- Parse Vietnamese multi-step command create+move with Desktop and D drive target.
-- Add policy/workflow/test coverage for new intents.
+- Stability hardening for real Vietnamese commands:
+- Prioritize deterministic rule parsing for high-confidence multi-step file ops.
+- Improve typo/abbreviation normalization coverage.
+- Add CLI module entrypoint + encoding hardening + regression tests.
 
 ## Next Execution Plan
 - Hardening Sprint 2: service wrapper + auto-start + health endpoint.
-- Add UI authentication persistence and secure secret handling.
-- Integrate microphone streaming STT and real speaker-embedding verifier.
+- Add path-entity disambiguation (many matches, missing source, conflict handling).
+- Add rollback/preview mode for multi-step file workflows.
 
 ## Known Issues
 - File finder still broad; relevance ranking should be improved.

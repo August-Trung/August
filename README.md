@@ -32,6 +32,7 @@ python run.py voice-login --role owner --actor august --allow-c-drive-full --sec
 python run.py login --role owner --actor august --allow-c-drive-full --secret 123456
 python run.py run "tim ban thao lap trinh trong o D va gui zalo cho sep, gui email cho team"
 python run.py run "tao thu muc zzz o desktop roi di chuyen vao thu muc backup trong o d"
+python -m futureos --help
 ```
 
 Interactive mode:
@@ -112,8 +113,9 @@ ZALO_ACCESS_TOKEN=
 - Parse command by rule-first and optionally AI fallback
 - Parse command with Hybrid NLU v2:
   - Vietnamese normalization (accent, abbreviation, typo tolerance)
-  - AI primary parser (schema-based)
-  - rule fallback for deterministic safety
+  - High-confidence deterministic rule parser (priority)
+  - AI parser (schema-based) for flexible fallback
+  - clarify fallback for missing critical args
 - Ask for confirmation for high-risk actions
 - Enforce role policy (`owner/dev/user/guest`) before execution
 - Enforce C-drive guard policy with owner toggle + strict dev/user/guest rules
@@ -153,6 +155,7 @@ ZALO_ACCESS_TOKEN=
 - Add job queue + retry/backoff for connectors
 - Add policy DSL for enterprise-grade safety
 - Add tests around parsing and dangerous-action gating
+- Add disambiguation UX when search returns multiple files/folders
 
 ## 6) Pre-check gate (required before each execution)
 

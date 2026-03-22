@@ -46,6 +46,26 @@ def find_draft_files(root: str = "D:\\", limit: int = 5) -> list[str]:
     return [str(x) for x in candidates[:limit]]
 
 
+def search_files(root: str, keyword: str, limit: int = 20) -> dict[str, Any]:
+    base = Path(root)
+    if not base.exists():
+        return {"root": str(base), "keyword": keyword, "files": [], "count": 0}
+    key = keyword.strip().lower()
+    files: list[str] = []
+    try:
+        for p in base.rglob("*"):
+            if not p.is_file():
+                continue
+            if key and key not in p.name.lower():
+                continue
+            files.append(str(p))
+            if len(files) >= limit:
+                break
+    except Exception:
+        pass
+    return {"root": str(base), "keyword": keyword, "files": files, "count": len(files)}
+
+
 def send_zalo(message: str, recipient_hint: str) -> dict[str, Any]:
     if settings.dry_run:
         return {"mode": "dry_run", "recipient_hint": recipient_hint, "message": message}

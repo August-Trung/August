@@ -181,6 +181,16 @@ def _run_cases() -> dict[str, CaseResult]:
     ok_abr = "dir_create" in intents and "path_move" in intents
     results["F-015"] = CaseResult("Pass" if ok_abr else "Fail", ",".join(intents), "Abbrev+typo VN parsing.")
 
+    p = route("tim file dư liueeju ở màn hình desk rồi vào ổ D tạo thư mục mới đặt tên tùy ý rồi di chuyển vào đó được không?")
+    intents = []
+    for a in p.actions:
+        if a.intent == IntentType.COMPOSITE:
+            intents.extend([s.get("intent") for s in a.args.get("steps", [])])
+        else:
+            intents.append(a.intent.value)
+    ok_sentence = all(x in intents for x in ["file_search", "dir_create", "path_move"])
+    results["F-016"] = CaseResult("Pass" if ok_sentence else "Fail", ",".join(intents), "Original complex VN sentence parsing.")
+
     # Permission
     guest = UserContext(role=Role.GUEST, allow_c_drive_full=False, actor="tc-guest")
     dec = evaluate_action(Action(intent=IntentType.FILE_DELETE, args={"path": "C:\\tmp\\a.txt"}), guest)
