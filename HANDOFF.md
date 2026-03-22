@@ -6,25 +6,25 @@
 
 ## Current Snapshot
 - Date: 2026-03-22
-- Active branch: `codex/core-file-ops`
-- Last focus: core file operations gap closure
-- Run status: VN create+move command supported
+- Active branch: `codex/fileops-broad-testing`
+- Last focus: Hybrid NLU v2 and broad fileops testing
+- Run status: VN shorthand/typo parsing supported
 
 ## Completed In Latest Session
-- Added core file intents: dir_create/path_move/path_copy/path_rename/path_list.
-- Added workflow implementations for folder/path operations.
-- Added VN multi-step parser for create+move desktop -> D:\\backup.
-- Extended policy checks for new path intents.
-- Added testcase and tests for core file operations.
+- Added `futureos/nlu.py` normalization (abbr + typo + accent handling).
+- Upgraded router to Hybrid NLU v2 (AI primary + rule fallback + clarify fallback).
+- Added broad fileops test script and report output.
+- Extended functional testcases (F-011..F-015) for VN command variants.
+- Fixed AI fallback robustness on API quota/errors.
 
 ## In Progress
-- Hardening Sprint 2 planning
+- Sprint 2 parser/entity hardening planning
 
 ## Open Risks / Blockers
 - Real Zalo integration depends on OA/ZNS policy and credentials
 - Voice ownership detection still passphrase-based (needs real embedding verifier)
 - Queue is still file-based, not built for high-concurrency distributed execution.
-- Path parser still heuristic-based for complex natural language variants.
+- Path entity extraction still heuristic-heavy for deeply ambiguous commands.
 
 ## Verify Quickly
 ```powershell

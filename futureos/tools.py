@@ -159,3 +159,16 @@ def list_path(path: str, limit: int = 50) -> dict[str, Any]:
         return {"path": str(p), "items": [str(p)], "count": 1}
     items = sorted([str(x) for x in p.iterdir()], key=lambda x: x.lower())[:limit]
     return {"path": str(p), "items": items, "count": len(items)}
+
+
+def zip_path(src_path: str, zip_path_out: str) -> dict[str, Any]:
+    src = Path(src_path)
+    out = Path(zip_path_out)
+    if settings.dry_run:
+        return {"mode": "dry_run", "src_path": str(src), "zip_path": str(out), "operation": "zip"}
+    if not src.exists():
+        raise FileNotFoundError(f"Source not found: {src_path}")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    base = out.with_suffix("") if out.suffix.lower() == ".zip" else out
+    archive_file = shutil.make_archive(str(base), "zip", root_dir=str(src.parent), base_dir=src.name)
+    return {"mode": "zipped", "src_path": str(src), "zip_path": archive_file}

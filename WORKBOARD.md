@@ -5,7 +5,8 @@
 | Feature | Status | Notes |
 |---|---|---|
 | Core CLI orchestration | done | End-to-end dry-run works |
-| Rule-first router | done | Composite command supported |
+| Rule-first router | done | Deterministic fallback and safety guard |
+| Hybrid NLU v2 (AI primary) | done | Normalization + AI parse + clarify fallback |
 | AI parser fallback | done | OpenAI Responses API path ready |
 | Safety confirm/history | done | High-risk action confirmation enabled |
 | Voice pipeline | done | VN wakeword normalization + STT/TTS adapter path |
@@ -20,7 +21,7 @@
 | Dashboard + settings | done | Session/log/settings + gate panel |
 | Background runtime | done | Queue + worker + lock/heartbeat + retry/backoff + dead-letter |
 | Test matrix and regression suite | done | `Not Run` cleanup + automation + evidence image |
-| Core file ops parser (VN create+move) | done | Supports mkdir/move/copy/rename/list intents |
+| Core file ops parser (VN create+move) | done | Supports mkdir/move/copy/rename/list/zip intents |
 
 ## This Execution Plan
 - Core file ops hotfix:

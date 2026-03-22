@@ -34,6 +34,7 @@ def evaluate_action(action: Action, user: UserContext) -> PolicyDecision:
         IntentType.PATH_MOVE,
         IntentType.PATH_COPY,
         IntentType.PATH_RENAME,
+        IntentType.PATH_ZIP,
     } and user.role == Role.GUEST:
         return PolicyDecision(allowed=False, reason="Guest cannot modify files.")
 
@@ -51,7 +52,7 @@ def evaluate_action(action: Action, user: UserContext) -> PolicyDecision:
             needs_confirmation=True,
         )
 
-    if action.intent in {IntentType.FILE_WRITE, IntentType.DIR_CREATE, IntentType.PATH_COPY}:
+    if action.intent in {IntentType.FILE_WRITE, IntentType.DIR_CREATE, IntentType.PATH_COPY, IntentType.PATH_ZIP}:
         return PolicyDecision(
             allowed=True,
             reason="Path write operation allowed with confirmation.",
@@ -115,6 +116,7 @@ def _check_c_drive_policy(path: str, intent: IntentType, user: UserContext) -> P
             IntentType.PATH_MOVE,
             IntentType.PATH_COPY,
             IntentType.PATH_RENAME,
+            IntentType.PATH_ZIP,
         }:
             return PolicyDecision(allowed=False, reason="Guest cannot modify C drive.")
         return PolicyDecision(allowed=True, reason="Guest read-only access on C drive.")

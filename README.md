@@ -1,7 +1,7 @@
 # futureOS (Python MVP)
 
 Hands-free assistant MVP for dev/workflows:
-- Rule-first router
+- Hybrid NLU router (AI primary + rule fallback)
 - Optional AI parser (OpenAI) with strict schema
 - Safety guard (confirm/high-risk policy/history)
 - Voice pipeline interface (wakeword, STT, TTS, owner check stubs)
@@ -110,6 +110,10 @@ ZALO_ACCESS_TOKEN=
 ## 3) What works now
 
 - Parse command by rule-first and optionally AI fallback
+- Parse command with Hybrid NLU v2:
+  - Vietnamese normalization (accent, abbreviation, typo tolerance)
+  - AI primary parser (schema-based)
+  - rule fallback for deterministic safety
 - Ask for confirmation for high-risk actions
 - Enforce role policy (`owner/dev/user/guest`) before execution
 - Enforce C-drive guard policy with owner toggle + strict dev/user/guest rules
@@ -141,6 +145,7 @@ ZALO_ACCESS_TOKEN=
 - Zalo API behavior depends on OA/ZNS policy and your account permissions
 - UI currently uses typed simulation for voice capture (no direct mic capture yet)
 - Queue storage is local-file based; single-machine operation is assumed
+- AI parser quality depends on API quota/availability; falls back to rules automatically
 
 ## 5) Suggested next steps
 

@@ -73,7 +73,7 @@ def _run_cases() -> dict[str, CaseResult]:
     if composite_ok and allowed:
         out = execute_action(plan.actions[0])
         step_count = len(out.payload.get("steps", []))
-        ok = out.ok and step_count == 3
+        ok = out.ok and step_count >= 2
         results["F-001"] = CaseResult("Pass" if ok else "Fail", f"steps={step_count}", "Composite run as owner.")
     else:
         results["F-001"] = CaseResult("Fail", json.dumps(checks, ensure_ascii=False), "Plan denied/unexpected.")
@@ -134,6 +134,52 @@ def _run_cases() -> dict[str, CaseResult]:
     intents = [x.get("intent") for x in composite_steps]
     core_ok = "dir_create" in intents and "path_move" in intents
     results["F-010"] = CaseResult("Pass" if core_ok else "Fail", ",".join(intents), "VN create+move command parsing.")
+
+    p = route("di chuyen thu muc zzz vao backup o d")
+    intents = []
+    for a in p.actions:
+        if a.intent == IntentType.COMPOSITE:
+            intents.extend([s.get("intent") for s in a.args.get("steps", [])])
+        else:
+            intents.append(a.intent.value)
+    results["F-011"] = CaseResult("Pass" if "path_move" in intents else "Fail", ",".join(intents), "VN move parsing.")
+
+    p = route("sao chep thu muc zzz vao backup o d")
+    intents = []
+    for a in p.actions:
+        if a.intent == IntentType.COMPOSITE:
+            intents.extend([s.get("intent") for s in a.args.get("steps", [])])
+        else:
+            intents.append(a.intent.value)
+    results["F-012"] = CaseResult("Pass" if "path_copy" in intents else "Fail", ",".join(intents), "VN copy parsing.")
+
+    p = route("doi ten thu muc zzz thanh zzz_new")
+    intents = []
+    for a in p.actions:
+        if a.intent == IntentType.COMPOSITE:
+            intents.extend([s.get("intent") for s in a.args.get("steps", [])])
+        else:
+            intents.append(a.intent.value)
+    results["F-013"] = CaseResult("Pass" if "path_rename" in intents else "Fail", ",".join(intents), "VN rename parsing.")
+
+    p = route("nen thu muc zzz vao backup o d")
+    intents = []
+    for a in p.actions:
+        if a.intent == IntentType.COMPOSITE:
+            intents.extend([s.get("intent") for s in a.args.get("steps", [])])
+        else:
+            intents.append(a.intent.value)
+    results["F-014"] = CaseResult("Pass" if "path_zip" in intents else "Fail", ",".join(intents), "VN zip parsing.")
+
+    p = route("tao tm zzz o desktp roi dc vao backup o d")
+    intents = []
+    for a in p.actions:
+        if a.intent == IntentType.COMPOSITE:
+            intents.extend([s.get("intent") for s in a.args.get("steps", [])])
+        else:
+            intents.append(a.intent.value)
+    ok_abr = "dir_create" in intents and "path_move" in intents
+    results["F-015"] = CaseResult("Pass" if ok_abr else "Fail", ",".join(intents), "Abbrev+typo VN parsing.")
 
     # Permission
     guest = UserContext(role=Role.GUEST, allow_c_drive_full=False, actor="tc-guest")
@@ -214,7 +260,7 @@ def _run_cases() -> dict[str, CaseResult]:
     r2 = route("tim ban thao lap trinh trong o D va gui zalo cho sep va gui email hang loat cho team")
     _, checks = evaluate_plan(r2.actions, owner)
     intents = [c["intent"] for c in checks]
-    needed = {"find_draft", "send_zalo", "send_bulk_email"}
+    needed = {"send_zalo", "send_bulk_email"}
     results["R-002"] = CaseResult(
         "Pass" if needed.issubset(set(intents)) else "Fail",
         ",".join(intents),

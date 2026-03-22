@@ -213,3 +213,30 @@
 
 ### Next Step
 - Sprint 2 parser upgrade: robust path/entity extraction and multilingual intent tuning.
+
+## 2026-03-22 (Hybrid NLU v2 + Broad FileOps Testing)
+
+### Delivered
+- Added `futureos/nlu.py` normalization layer:
+  - Vietnamese accent normalization
+  - abbreviation expansion (`tm`, `dc`, ...)
+  - light typo correction (`desktp` -> `desktop`)
+- Switched router strategy to Hybrid v2:
+  - AI parser primary (schema-based)
+  - rule fallback
+  - clarify-required fallback for missing critical args
+- Expanded parser coverage for file ops intents and VN shorthand variants.
+- Added broad fileops test script:
+  - `scripts/broad_fileops_test.py`
+  - report: `data/broad_fileops_report.json`
+- Added tests:
+  - `tests/test_nlu.py`
+  - expanded `tests/test_core_file_ops.py`
+
+### Decisions
+- Keep deterministic rule fallback as mandatory safety net.
+- Treat AI API failure/quota as non-fatal and fall back to rules.
+
+### Risks
+- Heuristic path extraction still limited for deeply ambiguous commands.
+- AI parser quality depends on model/quota availability.

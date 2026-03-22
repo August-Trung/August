@@ -16,6 +16,7 @@ class IntentType(str, Enum):
     PATH_COPY = "path_copy"
     PATH_RENAME = "path_rename"
     PATH_LIST = "path_list"
+    PATH_ZIP = "path_zip"
     SEND_ZALO = "send_zalo"
     SEND_BULK_EMAIL = "send_bulk_email"
     COMPOSITE = "composite"
@@ -33,6 +34,8 @@ class Plan(BaseModel):
     original_text: str
     actions: list[Action] = Field(default_factory=list)
     needs_confirmation: bool = False
+    confidence: float = 1.0
+    ambiguities: list[str] = Field(default_factory=list)
 
 
 class ExecutionResult(BaseModel):

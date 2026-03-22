@@ -13,6 +13,7 @@ from futureos.tools import (
     send_bulk_email,
     send_zalo,
     write_text_file,
+    zip_path,
 )
 
 
@@ -61,6 +62,10 @@ def execute_action(action: Action) -> ExecutionResult:
     if action.intent == IntentType.PATH_LIST:
         resp = list_path(path=action.args.get("path", ""), limit=int(action.args.get("limit", 50)))
         return ExecutionResult(ok=True, action=action.intent, detail="Path list completed", payload=resp)
+
+    if action.intent == IntentType.PATH_ZIP:
+        resp = zip_path(src_path=action.args.get("src_path", ""), zip_path_out=action.args.get("zip_path", ""))
+        return ExecutionResult(ok=True, action=action.intent, detail="Path zip completed", payload=resp)
 
     if action.intent == IntentType.SEND_ZALO:
         resp = send_zalo(
