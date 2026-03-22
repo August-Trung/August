@@ -1,0 +1,161 @@
+{
+  "router_cases": [
+    {
+      "input": "tao thu muc zzz o desktop",
+      "intents": [
+        "dir_create"
+      ],
+      "needs_confirmation": true
+    },
+    {
+      "input": "tao thu muc zzz o desktop roi di chuyen vao thu muc backup trong o d",
+      "intents": [
+        "dir_create",
+        "path_move"
+      ],
+      "needs_confirmation": true
+    },
+    {
+      "input": "di chuyen thu muc zzz vao backup o d",
+      "intents": [
+        "path_move"
+      ],
+      "needs_confirmation": true
+    },
+    {
+      "input": "sao chep thu muc zzz vao backup o d",
+      "intents": [
+        "path_copy"
+      ],
+      "needs_confirmation": true
+    },
+    {
+      "input": "doi ten thu muc zzz thanh zzz_new",
+      "intents": [
+        "path_rename"
+      ],
+      "needs_confirmation": true
+    },
+    {
+      "input": "xem thu muc desktop",
+      "intents": [
+        "path_list"
+      ],
+      "needs_confirmation": false
+    },
+    {
+      "input": "nen thu muc zzz vao backup o d",
+      "intents": [
+        "path_zip"
+      ],
+      "needs_confirmation": true
+    },
+    {
+      "input": "xoa file o c",
+      "intents": [
+        "file_delete"
+      ],
+      "needs_confirmation": true
+    },
+    {
+      "input": "doc file",
+      "intents": [
+        "file_read"
+      ],
+      "needs_confirmation": false
+    },
+    {
+      "input": "ghi file",
+      "intents": [
+        "file_write"
+      ],
+      "needs_confirmation": true
+    }
+  ],
+  "policy_cases": [
+    {
+      "name": "guest_create",
+      "intent": "dir_create",
+      "allowed": false,
+      "expected_allowed": false,
+      "reason": "Guest cannot modify files.",
+      "pass": true
+    },
+    {
+      "name": "user_move_c",
+      "intent": "path_move",
+      "allowed": false,
+      "expected_allowed": false,
+      "reason": "User cannot delete on C drive.",
+      "pass": true
+    },
+    {
+      "name": "owner_move_c_no_full",
+      "intent": "path_move",
+      "allowed": false,
+      "expected_allowed": false,
+      "reason": "Owner must enable full C access to delete in C drive.",
+      "pass": true
+    },
+    {
+      "name": "owner_move_c_full",
+      "intent": "path_move",
+      "allowed": true,
+      "expected_allowed": true,
+      "reason": "Owner enabled full C drive access.",
+      "pass": true
+    },
+    {
+      "name": "dev_zip_c",
+      "intent": "path_zip",
+      "allowed": true,
+      "expected_allowed": true,
+      "reason": "Dev full access on C drive.",
+      "pass": true
+    }
+  ],
+  "workflow_cases": [
+    {
+      "intent": "dir_create",
+      "ok": true,
+      "detail": "Directory create completed",
+      "payload_mode": "dry_run"
+    },
+    {
+      "intent": "path_move",
+      "ok": true,
+      "detail": "Path move completed",
+      "payload_mode": "dry_run"
+    },
+    {
+      "intent": "path_copy",
+      "ok": true,
+      "detail": "Path copy completed",
+      "payload_mode": "dry_run"
+    },
+    {
+      "intent": "path_rename",
+      "ok": true,
+      "detail": "Path rename completed",
+      "payload_mode": "dry_run"
+    },
+    {
+      "intent": "path_list",
+      "ok": true,
+      "detail": "Path list completed",
+      "payload_mode": ""
+    },
+    {
+      "intent": "path_zip",
+      "ok": true,
+      "detail": "Path zip completed",
+      "payload_mode": "dry_run"
+    },
+    {
+      "intent": "file_delete",
+      "ok": true,
+      "detail": "File delete completed",
+      "payload_mode": "not_found"
+    }
+  ]
+}

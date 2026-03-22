@@ -30,6 +30,12 @@ class CoreFileOpsTests(unittest.TestCase):
         self.assertTrue(result.ok)
         self.assertEqual(result.payload.get("mode"), "dry_run")
 
+    def test_path_zip_dry_run(self) -> None:
+        action = Action(intent=IntentType.PATH_ZIP, args={"src_path": "D:\\a", "zip_path": "D:\\backup\\a.zip"})
+        result = execute_action(action)
+        self.assertTrue(result.ok)
+        self.assertEqual(result.payload.get("mode"), "dry_run")
+
 
 if __name__ == "__main__":
     unittest.main()
