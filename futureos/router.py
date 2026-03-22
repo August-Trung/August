@@ -11,6 +11,9 @@ from futureos.nlu import normalize_text
 
 def route(text: str) -> Plan:
     normalized = normalize_text(text)
+    rule_plan = _rule_first(normalized, original_text=text)
+    if _is_high_confidence_rule(rule_plan):
+        return _maybe_clarify(rule_plan)
 
     # Hybrid v2: AI primary when available, rule fallback always.
     if settings.use_ai_router:
@@ -19,7 +22,6 @@ def route(text: str) -> Plan:
             ai_plan.original_text = text
             return _maybe_clarify(ai_plan)
 
-    rule_plan = _rule_first(normalized, original_text=text)
     if rule_plan.actions:
         return _maybe_clarify(rule_plan)
 
@@ -38,6 +40,19 @@ def _is_usable(plan: Plan) -> bool:
     if all(a.intent == IntentType.UNKNOWN for a in plan.actions):
         return False
     return True
+
+
+def _is_high_confidence_rule(plan: Plan) -> bool:
+    if not plan.actions:
+        return False
+    if plan.confidence >= 0.8:
+        return True
+    first = plan.actions[0]
+    if first.intent != IntentType.COMPOSITE:
+        return False
+    intents = [s.get("intent") for s in first.args.get("steps", [])]
+    required = {"file_search", "dir_create", "path_move"}
+    return required.issubset(set(intents))
 
 
 def _maybe_clarify(plan: Plan) -> Plan:
@@ -66,6 +81,47 @@ def _maybe_clarify(plan: Plan) -> Plan:
 def _rule_first(text: str, original_text: str | None = None) -> Plan:
     t = text.lower()
     actions: list[Action] = []
+
+    # High-priority VN flow:
+    # "tim file du_lieu o desktop roi vao o d tao thu muc moi dat ten tuy y roi di chuyen vao_do"
+    if (
+        "tim file" in t
+        and "desktop" in t
+        and "tao thu muc" in t
+        and any(k in t for k in ["vao_do", "di chuyen vao", "di chuyen vao do", "roi vao o d"])
+    ):
+        keyword = _extract_search_keyword(t) or "du_lieu"
+        folder_name = _extract_folder_name(t)
+        if not folder_name or "tuy_y" in folder_name or folder_name in {"moi", "moi_dat_ten_tuy_y"}:
+            folder_name = "auto_folder"
+        created_dir = str(Path(_extract_drive_target(t)) / folder_name)
+        steps = [
+            Action(
+                intent=IntentType.FILE_SEARCH,
+                args={"root": str(_desktop_path()), "keyword": keyword, "limit": 20},
+                risk="low",
+                reason="Search file by keyword on desktop",
+            ),
+            Action(
+                intent=IntentType.DIR_CREATE,
+                args={"path": created_dir},
+                risk="medium",
+                reason="Create destination directory",
+            ),
+            Action(
+                intent=IntentType.PATH_MOVE,
+                args={"src_path": "{{found_file}}", "dst_path": "{{created_dir}}\\{{found_file_name}}"},
+                risk="high",
+                reason="Move found file into created directory",
+            ),
+        ]
+        return Plan(
+            original_text=original_text or text,
+            actions=[Action(intent=IntentType.COMPOSITE, args={"steps": [x.model_dump() for x in steps]}, risk="high")],
+            needs_confirmation=True,
+            confidence=0.83,
+            ambiguities=[],
+        )
 
     if ("tao thu muc" in t or "create folder" in t) and ("di chuyen" in t or "move" in t):
         folder_name = _extract_folder_name(t) or "new_folder"
@@ -159,6 +215,13 @@ def _extract_folder_name(t: str) -> str | None:
     return None
 
 
+def _extract_search_keyword(t: str) -> str | None:
+    m = re.search(r"tim file\s+([a-zA-Z0-9_\-]+)\s+(o desktop|desktop|roi|r\u1ed3i)", t)
+    if not m:
+        return None
+    return m.group(1).strip()
+
+
 def _extract_source_path(t: str) -> str | None:
     if "desktop" in t and "thu muc" in t:
         name = _extract_folder_name(t)
@@ -186,6 +249,14 @@ def _extract_move_target(t: str) -> str:
     if "o d" in t:
         return "D:\\"
     return "D:\\backup"
+
+
+def _extract_drive_target(t: str) -> str:
+    if "o c" in t or "c:\\" in t:
+        return "C:\\"
+    if "o d" in t or "d:\\" in t:
+        return "D:\\"
+    return "D:\\"
 
 
 def _extract_new_name(t: str) -> str | None:

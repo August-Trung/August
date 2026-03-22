@@ -15,7 +15,7 @@ Return strict JSON only:
 {
   "original_text": "...",
   "actions": [
-    {"intent":"find_draft|file_read|file_write|file_delete|dir_create|path_move|path_copy|path_rename|path_list|path_zip|send_zalo|send_bulk_email|composite|unknown","args":{},"risk":"low|medium|high","reason":"..."}
+    {"intent":"find_draft|file_search|file_read|file_write|file_delete|dir_create|path_move|path_copy|path_rename|path_list|path_zip|send_zalo|send_bulk_email|composite|unknown","args":{},"risk":"low|medium|high","reason":"..."}
   ],
   "needs_confirmation": true|false,
   "confidence": 0.0-1.0,

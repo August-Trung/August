@@ -240,3 +240,34 @@
 ### Risks
 - Heuristic path extraction still limited for deeply ambiguous commands.
 - AI parser quality depends on model/quota availability.
+
+## 2026-03-22 (Core FileOps Reliability Hardening)
+
+### Delivered
+- Added module entrypoint `futureos/__main__.py` so CLI works with `python -m futureos`.
+- Added direct script guard in `futureos/app.py` (`python -m futureos.app` now runs).
+- Hardened Windows CLI encoding in `main()` by reconfiguring stdin/stdout/stderr to UTF-8.
+- Updated Hybrid router strategy:
+  - run rule parser first
+  - if rule is high-confidence, execute it directly
+  - otherwise use AI parser and then rule fallback
+- Improved Vietnamese normalization dictionary and phrase replacements for typo/abbreviation variants.
+- Added CLI regression test `tests/test_cli_entrypoint.py`.
+- Updated NLU tests with real UTF-8 Vietnamese sentence and unaccented variant.
+- Re-ran gates:
+  - `python -m unittest discover -s tests` (28/28 pass)
+  - `python scripts/execute_testcases.py` (Failed rows: 0)
+  - `python scripts/check_testcases.py` (no Fail/Not Run)
+  - `python scripts/broad_fileops_test.py` (policy_fail=0)
+  - `python scripts/run_gate.py` (Gate passed)
+
+### Decisions
+- Keep AI parser enabled but never let it override high-confidence deterministic file-op plans.
+- Treat terminal encoding as production reliability concern for Vietnamese input/output.
+
+### Risks
+- Ambiguous search result selection still defaults to first match; ranking/confirmation can be improved.
+- Real-world command quality still depends on user phrasing when source/destination are missing.
+
+### Next Step
+- Add disambiguation step when file search returns multiple candidates before move/copy/delete.
